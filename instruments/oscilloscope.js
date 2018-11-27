@@ -110,6 +110,10 @@ visir.Oscilloscope.prototype.WriteRequest = function()
 	return $("<root />").append($xml).html();
 }
 
+// YO
+visir.Oscilloscope.prototype.ReadRequest = function(request) {}
+// /YO
+
 visir.Oscilloscope.prototype.ReadResponse = function(response) {
 	var me = this;
 	var $xml = $(response);
