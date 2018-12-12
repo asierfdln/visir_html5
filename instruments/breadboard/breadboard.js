@@ -1301,10 +1301,9 @@ visir.Breadboard.prototype.WriteRequest = function()
 	return $("<root />").append($xml).html();
 }
 
-visir.Breadboard.prototype.ReadResponse = function()
-{
+visir.Breadboard.prototype.ReadResponse = function() {}
 
-}
+visir.Breadboard.prototype.ReadRequest = function() {}
 
 visir.Breadboard.prototype.ReadSave = function($xml)
 {

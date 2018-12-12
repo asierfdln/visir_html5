@@ -72,9 +72,20 @@ visir.FlukeMultimeter = function(id, elem)
 
 extend(visir.FlukeMultimeter, visir.Multimeter)
 
-visir.FlukeMultimeter.prototype.Test = function() {
+// YO
+//visir.FlukeMultimeter.prototype.ReadRequest = function(request)
+//{
+//	var $xml = $(request);
+//	var $multimeter = $xml.find("multimeter[id=" + this._id + "]");
+//	if ($multimeter.length > 0) {
+//		var mode = $multimeter.find("dmm_function").attr("value");
+//		this.SetMode(mode);
+//		setRotation(this._elem.find(".top"), 105);
+//	}
+//}
+// /YO
 
-}
+visir.FlukeMultimeter.prototype.Test = function() {}
 
 visir.FlukeMultimeter.prototype.UpdateDisplay = function() {
 	if (this.GetMode() == "off") {

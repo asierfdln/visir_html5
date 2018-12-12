@@ -22,6 +22,19 @@ visir.Multimeter.prototype.SetResolution = function(res) { this._resolution = re
 visir.Multimeter.prototype.GetResolution = function() { return this._resolution; }
 
 visir.Multimeter.prototype.GetResult = function() { return this._result }
+
+// YO
+visir.Multimeter.prototype.ReadRequest = function(request)
+{
+	var $xml = $(request);
+	var $multimeter = $xml.find("multimeter[id=" + this._id + "]");
+	if ($multimeter.length > 0) {
+		var mode = $multimeter.find("dmm_function").attr("value");
+		this.SetMode(mode);
+		setRotation(this._elem.find(".top"), 105);
+	}
+}
+// /YO
 	
 visir.Multimeter.prototype.WriteRequest = function()
 {
@@ -43,7 +56,7 @@ visir.Multimeter.prototype.WriteRequest = function()
 	
 	// XXX: trick to get a valid root doc
 	return $("<root />").append($xml).html();
-},
+}
 
 visir.Multimeter.prototype.ReadResponse = function(response) {
 	var $xml = $(response);
@@ -55,5 +68,6 @@ visir.Multimeter.prototype.ReadResponse = function(response) {
 		} else {
 			this._result = NaN;
 		}
-	}	
+		this.SetMode("resistance");
+	}
 }
