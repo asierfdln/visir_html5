@@ -10,7 +10,7 @@
          <dmm_autozero value=\"1\"></dmm_autozero>
       </multimeter>
       <functiongenerator id=\"1\">
-         <fg_waveform value=\"sine\"></fg_waveform>
+         <fg_waveform value=\"square\"></fg_waveform>
          <fg_frequency value=\"1000\"></fg_frequency>
          <fg_amplitude value=\"0.5\"></fg_amplitude>
          <fg_offset value=\"0\"></fg_offset>

@@ -111,7 +111,82 @@ visir.Oscilloscope.prototype.WriteRequest = function()
 }
 
 // YO
-visir.Oscilloscope.prototype.ReadRequest = function(request) {}
+visir.Oscilloscope.prototype.ReadRequest = function(request)
+{
+	var $xml = $(request);
+	var $oscilloscope = $xml.find("oscilloscope[id=" + this._id + "]");
+	if ($oscilloscope.length > 0) {
+
+		// horizontal
+		var $horizontal = $oscilloscope.find("horizontal");
+		var horz_samplerate = $horizontal.find("horz_samplerate").attr("value");
+		this._sampleRate = horz_samplerate;
+		var horz_refpos = $horizontal.find("horz_refpos").attr("value");
+		this._horzRefPos = horz_refpos;
+		var horz_recordlength = $horizontal.find("horz_recordlength").attr("value");
+		this._recordLength = horz_recordlength;
+
+		// channels (just two)
+		var $channels = $oscilloscope.find("channels");
+		for (var i = 1; i < 3; i++) {
+			var ch = this._channels[i-1];
+			var $channel = $channels.find('channel[number="' + i + '"]');
+			trace(ch);
+			var enabled = $channel.find("chan_enabled").attr("value");
+			ch.enabled = Number(enabled);
+			this._SetChEnabled(i-1, Number(enabled));
+			var coupling = $channel.find("chan_coupling").attr("value");
+			ch.coupling = coupling;
+			var range = $channel.find("chan_range").attr("value");
+			ch.range = Number(range);
+			var offset = $channel.find("chan_offset").attr("value");
+			ch.offset = Number(offset);
+			this._SetDisplayOffset(i-1, Number(offset));
+			var attenuation = $channel.find("chan_attenuation").attr("value");
+			ch.attenuation = Number(attenuation);
+			trace(ch);
+		}
+
+		var $trigger = $oscilloscope.find("trigger");
+		var source = $trigger.find("trig_source").attr("value").slice(-1);
+		this._SetTriggerSource(Number(source));
+		var slope = $trigger.find("trig_slope").attr("value");
+		this._SetTriggerSlope(slope);
+		var coupling = $trigger.find("trig_coupling").attr("value");
+		this._trigger.coupling = coupling;
+		var level = $trigger.find("trig_level").attr("value");
+		this._trigger.level = Number(level);
+		var mode = $trigger.find("trig_mode").attr("value");
+		this._SetTriggerMode(mode);
+		var timeout = $trigger.find("trig_timeout").attr("value");
+		this._trigger.timeout = Number(timeout);
+		var delay = $trigger.find("trig_delay").attr("value");
+		this._trigger.delay = Number(delay);
+		
+		// measurements
+		var $measurements = $oscilloscope.find("measurements");
+		trace(this._measurements);
+
+		// DEBERÍA FUNCIONAR, PERO COMO EN NINGUN MOMENTO SE HACE UN WriteRequest, EL ARRAY DE MEASUREMENTS ESTA SIEMPRE A CERO PORQUE
+		// NO SE AÑADE NADA (I.E., COMO ESTO DE CLICAR EN LOS TESTS ES UNA SIMULACION, NUNCA SE HACE UN MAKEMEASUREMENT->(...)->WriteRequest)
+
+		/* for (var i = 1; i < 4; i++) {
+			var meas = this._measurements[i - 1];
+			trace("len del this._measurements: " + this._measurements.length);
+			var $submeasurements = $measurements.find('measurement[number="' + i + '"]');
+			trace("di hola al $submeasurements" + $submeasurements);
+			var meas_channel = $submeasurements.find("meas_channel").attr("value").slice(-1);
+			trace("di hola al meas_channel " + meas_channel);
+			meas.channel = Number(meas_channel);
+			var meas_selection = $submeasurements.find("meas_selection").attr("value");
+			meas.selection = meas_selection;
+		} */
+
+		// autoscale
+		var autoscale = $oscilloscope.find("osc_autoscale").attr("value");
+		this._autoScale = Number(autoscale);
+	}
+}
 // /YO
 
 visir.Oscilloscope.prototype.ReadResponse = function(response) {

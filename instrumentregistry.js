@@ -82,6 +82,15 @@ visir.InstrumentRegistry.prototype.WriteRequest = function()
 	return out;
 }
 
+// YO
+visir.InstrumentRegistry.prototype.ReadRequest = function(request)
+{
+	for(var i=0;i<this._instruments.length; i++) {
+		this._instruments[i].instrument.ReadRequest(request);
+	}
+}
+// /YO
+
 visir.InstrumentRegistry.prototype.ReadResponse = function(response)
 {
 	for(var i=0;i<this._instruments.length; i++) {

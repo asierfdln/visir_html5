@@ -33,15 +33,32 @@ visir.FunctionGenerator.prototype.ReadRequest = function(request)
 	var $xml = $(request);
 	var $functiongenerator = $xml.find("functiongenerator[id=" + this._id + "]");
 	if ($functiongenerator.length > 0) {
-		this.SetActiveValue("freq");
+
 		var waveform = $functiongenerator.find("fg_waveform").attr("value");
 		this.SetWaveform(waveform);
+
+		// frequency
+		var val = this._values["freq"];
 		var frequency = $functiongenerator.find("fg_frequency").attr("value");
 		this._frequency = frequency;
+		this.SetActiveValue("freq");
+		this._SetActiveValue(frequency * val.multiplier , val.digit);
+
+		// amplitude
+		val = this._values["ampl"];
 		var amplitude = $functiongenerator.find("fg_amplitude").attr("value");
 		this._amplitude = amplitude;
+		this.SetActiveValue("ampl");
+		this._SetActiveValue(amplitude * val.multiplier , val.digit);
+
+		// offset
+		val = this._values["offset"];
 		var offset = $functiongenerator.find("fg_offset").attr("value");
 		this._offset = offset;
+		this.SetActiveValue("offset");
+		this._SetActiveValue(offset * val.multiplier, val.digit);
+
+		this.SetActiveValue("freq");
 		this._UpdateDisplay();
 	}
 }

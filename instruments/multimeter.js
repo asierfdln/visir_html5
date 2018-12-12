@@ -27,11 +27,33 @@ visir.Multimeter.prototype.GetResult = function() { return this._result }
 visir.Multimeter.prototype.ReadRequest = function(request)
 {
 	var $xml = $(request);
-	var $multimeter = $xml.find("multimeter[id=" + this._id + "]");
+	var $multimeter = $xml.find("multimeter[id=" + this._id + "]"); // el corchete ese ni debería estar ahí para que funcionara bien...
 	if ($multimeter.length > 0) {
 		var mode = $multimeter.find("dmm_function").attr("value");
 		this.SetMode(mode);
-		setRotation(this._elem.find(".top"), 105);
+		/*
+		  345: "off", 15: "ac volts", 45: "dc volts", 75: "off", 105: "resistance", 135: "off", 165: "ac current", 195: "dc current"
+		*/
+		switch (mode) { // _elem no está en multimeter, magia de js??...
+			case 'ac volts':
+			  setRotation(this._elem.find(".top"), 15);
+			  break;
+			case 'dc volts':
+			  setRotation(this._elem.find(".top"), 45);
+			  break;
+			case 'resistance':
+			  setRotation(this._elem.find(".top"), 105);
+			  break;
+			case 'ac current':
+			  setRotation(this._elem.find(".top"), 165);
+			  break;
+			case 'dc current':
+			  setRotation(this._elem.find(".top"), 195);
+			  break;
+			default:
+			  setRotation(this._elem.find(".top"), 345);
+			  break;
+		}
 	}
 }
 // /YO

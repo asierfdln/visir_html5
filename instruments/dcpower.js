@@ -38,7 +38,26 @@ visir.DCPower.prototype.WriteRequest = function()
 },
 
 // YO
-visir.DCPower.prototype.ReadRequest = function(request) {}
+visir.DCPower.prototype.ReadRequest = function(request)
+{
+	var $xml = $(request);
+	// var $dcpower = $xml.find("dcpower"); // mirar ReadResponse, algo de que el server no soporta las id's todavía...
+	var $dcpower = $xml.find("dcpower[id=" + this._id + "]");
+	if ($dcpower.length > 0)
+	{
+		var $outputs = $xml.find("dc_outputs");
+		for (var key in this._values)
+		{
+			var ch = this._values[key];
+			var $channel = $outputs.find('dc_output[channel="' + key + '"]');
+			var dc_voltage = $channel.find("dc_voltage").attr("value");
+			ch.voltage = dc_voltage;
+			var dc_current = $channel.find("dc_current").attr("value");
+			ch.current = dc_current;
+		}
+		this._SetActiveChannel("6V+");
+	}
+}
 // /YO
 
 visir.DCPower.prototype.ReadResponse = function(response) {
