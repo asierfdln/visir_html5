@@ -48,12 +48,12 @@ visir.DCPower.prototype.ReadRequest = function(request)
 		var $outputs = $xml.find("dc_outputs");
 		for (var key in this._values)
 		{
-			var ch = this._values[key];
 			var $channel = $outputs.find('dc_output[channel="' + key + '"]');
 			var dc_voltage = $channel.find("dc_voltage").attr("value");
-			ch.voltage = dc_voltage;
-			var dc_current = $channel.find("dc_current").attr("value");
-			ch.current = dc_current;
+			this._values[key].voltage = Number(dc_voltage) * 1000;
+			// var dc_current = $channel.find("dc_current").attr("value");
+			// this._channels[key].current = Number(dc_current);
+			// this._values[key].current = Number(dc_current);
 		}
 		this._SetActiveChannel("6V+");
 	}

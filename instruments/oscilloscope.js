@@ -131,7 +131,6 @@ visir.Oscilloscope.prototype.ReadRequest = function(request)
 		for (var i = 1; i < 3; i++) {
 			var ch = this._channels[i-1];
 			var $channel = $channels.find('channel[number="' + i + '"]');
-			trace(ch);
 			var enabled = $channel.find("chan_enabled").attr("value");
 			ch.enabled = Number(enabled);
 			this._SetChEnabled(i-1, Number(enabled));
@@ -144,7 +143,6 @@ visir.Oscilloscope.prototype.ReadRequest = function(request)
 			this._SetDisplayOffset(i-1, Number(offset));
 			var attenuation = $channel.find("chan_attenuation").attr("value");
 			ch.attenuation = Number(attenuation);
-			trace(ch);
 		}
 
 		var $trigger = $oscilloscope.find("trigger");
@@ -165,22 +163,72 @@ visir.Oscilloscope.prototype.ReadRequest = function(request)
 		
 		// measurements
 		var $measurements = $oscilloscope.find("measurements");
-		trace(this._measurements);
-
-		// DEBERÍA FUNCIONAR, PERO COMO EN NINGUN MOMENTO SE HACE UN WriteRequest, EL ARRAY DE MEASUREMENTS ESTA SIEMPRE A CERO PORQUE
-		// NO SE AÑADE NADA (I.E., COMO ESTO DE CLICAR EN LOS TESTS ES UNA SIMULACION, NUNCA SE HACE UN MAKEMEASUREMENT->(...)->WriteRequest)
-
-		/* for (var i = 1; i < 4; i++) {
-			var meas = this._measurements[i - 1];
-			trace("len del this._measurements: " + this._measurements.length);
+		for (var i = 1; i < 4; i++) {
 			var $submeasurements = $measurements.find('measurement[number="' + i + '"]');
-			trace("di hola al $submeasurements" + $submeasurements);
 			var meas_channel = $submeasurements.find("meas_channel").attr("value").slice(-1);
-			trace("di hola al meas_channel " + meas_channel);
-			meas.channel = Number(meas_channel);
 			var meas_selection = $submeasurements.find("meas_selection").attr("value");
-			meas.selection = meas_selection;
-		} */
+			if (meas_selection !== "none") {
+				var extra;
+				switch(meas_selection) {
+					case "voltageamplitude":
+						extra = 0;
+						break;
+					case "voltageaverage":
+						extra = 1;
+						break;
+					case "voltagebase":
+						extra = 2;
+						break;
+					case "negativedutycycle":
+						extra = 3;
+						break;
+					case "falltime":
+						extra = 4;
+						break;
+					case "frequency":
+						extra = 5;
+						break;
+					case "voltagemax":
+						extra = 6;
+						break;
+					case "voltagemin":
+						extra = 7;
+						break;
+					case "overshoot":
+						extra = 8;
+						break;
+					case "voltagepeaktopeak":
+						extra = 9;
+						break;
+					case "period":
+						extra = 10;
+						break;
+					case "phasedelay":
+						extra = 11;
+						break;
+					case "preshoot":
+						extra = 12;
+						break;
+					case "risetime":
+						extra = 13;
+						break;
+					case "voltagerms":
+						extra = 14;
+						break;
+					case "voltagetop":
+						extra = 15;
+						break;
+					case "positivewidth":
+						extra = 16;
+						break;
+					case "negativewidth":
+						extra = 17;
+						break;
+				}
+				this._measurementSelectionIdx = extra;
+				this._AddMeasurementAndAnimate(Number(meas_channel), extra);
+			}
+		}
 
 		// autoscale
 		var autoscale = $oscilloscope.find("osc_autoscale").attr("value");
