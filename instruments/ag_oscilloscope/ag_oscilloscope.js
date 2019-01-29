@@ -309,124 +309,129 @@ visir.AgilentOscilloscope.prototype._DrawGrid = function($elem)
 
 visir.AgilentOscilloscope.prototype._DrawPlot = function($elem)
 {
-	var context = $elem[0].getContext('2d');
-	context.strokeStyle = "#00ff00";
-	context.lineWidth		= 1.2;
+	// var elem = this._$elem.find(".plot")[0];
+	// trace("ElemDeLaFuncion_DrawPlot en este caso es undefined -> " + (typeof elem === "undefined"));
 
-	/* Get the size from the .graph element instead.
-		This works around the problem where canvases get no size if a parent node has display:none.
-	*/
-	var w = $elem.parent().width();
-	var h = $elem.parent().height();
-	context.clearRect(0,0, w, h);
-	context.beginPath();
+	if (typeof $elem[0] !== "undefined") {
+		var context = $elem[0].getContext('2d');
+		context.strokeStyle = "#00ff00";
+		context.lineWidth		= 1.2;
 
-	var me = this;
-	// local draw function
-	function DrawChannel(chnr) {
-		if (!me._channels[chnr].visible) { return; }
-		var ch = me._channels[chnr];
-		var graph = ch.graph;
-		var len = graph.length;
-		for(var i=0;i<len;i++) {
-			var x = i*w / len;
-			var y = -((graph[i] * (me._channels[chnr].inverted ? -1 : 1) / ch.range) + ch.display_offset) * (h / 8.0) + h/2;
-			y+=0.5;
-			if (i===0) {
-				context.moveTo(x,y);
-			} else {
-				context.lineTo(x,y);
+		/* Get the size from the .graph element instead.
+			This works around the problem where canvases get no size if a parent node has display:none.
+		*/
+		var w = $elem.parent().width();
+		var h = $elem.parent().height();
+		context.clearRect(0,0, w, h);
+		context.beginPath();
+
+		var me = this;
+		// local draw function
+		function DrawChannel(chnr) {
+			if (!me._channels[chnr].visible) { return; }
+			var ch = me._channels[chnr];
+			var graph = ch.graph;
+			var len = graph.length;
+			for(var i=0;i<len;i++) {
+				var x = i*w / len;
+				var y = -((graph[i] * (me._channels[chnr].inverted ? -1 : 1) / ch.range) + ch.display_offset) * (h / 8.0) + h/2;
+				y+=0.5;
+				if (i===0) {
+					context.moveTo(x,y);
+				} else {
+					context.lineTo(x,y);
+				}
 			}
 		}
-	}
 
-	function DrawMath() {
-		if (!me._math.visible) return;
-		var maxrange = Math.max(me._channels[0].range, me._channels[1].range);
-		var graph1 = me._channels[0].graph;
-		var graph2 = me._channels[1].graph;
-		var len = Math.min(graph1.length, graph2.length);
-		var sum = 0.0;
-		for(var i=0;i<len;i++) {
-			var sample = 0.0;
-			var sample1 = graph1[i] * (me._channels[0].inverted ? -1 : 1);
-		 	var sample2 = graph2[i] * (me._channels[1].inverted ? -1 : 1);
-			switch(me._math.method) {
-				case "sub":
-					sample = sample1 - sample2;
-					break;
-				case "mul":
-					sample = sample1 * sample2;
-					break;
-				case "derive":
-					var g = me._channels[me._math.sourceCh].graph;
-					sample = (i == 0) ? 0 : g[i] - g[i-1];
-					break;
-				case "integrate":
-					var g = me._channels[me._math.sourceCh].graph;
-					//sum = sum + (i == 0) ? 0 : (g[i] + g[i-1]) / 2.0;
-					sum = sum + (g[i] / 4) ;
-					sample = sum;
-					break;
-			}
+		function DrawMath() {
+			if (!me._math.visible) return;
+			var maxrange = Math.max(me._channels[0].range, me._channels[1].range);
+			var graph1 = me._channels[0].graph;
+			var graph2 = me._channels[1].graph;
+			var len = Math.min(graph1.length, graph2.length);
+			var sum = 0.0;
+			for(var i=0;i<len;i++) {
+				var sample = 0.0;
+				var sample1 = graph1[i] * (me._channels[0].inverted ? -1 : 1);
+			 	var sample2 = graph2[i] * (me._channels[1].inverted ? -1 : 1);
+				switch(me._math.method) {
+					case "sub":
+						sample = sample1 - sample2;
+						break;
+					case "mul":
+						sample = sample1 * sample2;
+						break;
+					case "derive":
+						var g = me._channels[me._math.sourceCh].graph;
+						sample = (i == 0) ? 0 : g[i] - g[i-1];
+						break;
+					case "integrate":
+						var g = me._channels[me._math.sourceCh].graph;
+						//sum = sum + (i == 0) ? 0 : (g[i] + g[i-1]) / 2.0;
+						sum = sum + (g[i] / 4) ;
+						sample = sum;
+						break;
+				}
 
-			var x = i*w / len;
-			var y = -((sample / maxrange) + me._math.display_offset) * (h / 8.0) + h/2;
-			y+=0.5;
-			if (i===0) {
-				context.moveTo(x,y);
-			} else {
-				context.lineTo(x,y);
+				var x = i*w / len;
+				var y = -((sample / maxrange) + me._math.display_offset) * (h / 8.0) + h/2;
+				y+=0.5;
+				if (i===0) {
+					context.moveTo(x,y);
+				} else {
+					context.lineTo(x,y);
+				}
 			}
 		}
-	}
 
-	function transformX(x)
-	{
-		var timediv = me._timedivs[me._timeIdx];
-		return (w / 2.0) + x / timediv * (w/10.0);
-	}
-
-	function transformY(ch, y)
-	{
-			return -((y * (ch.inverted ? -1 : 1) / ch.range) + ch.display_offset) * (h / 8.0) + h/2;
-	}
-
-	function DrawCursors()
-	{
-		function DrawCursor(x1, y1, x2, y2, color, dash) {
-			if (typeof context.setLineDash == "function") context.setLineDash(dash);
-			context.save(); 
-			context.strokeStyle = color;
-			context.beginPath();
-			context.moveTo(x1+0.5, y1+0.5);
-			context.lineTo(x2+0.5, y2+0.5);
-			context.stroke();
-			context.restore();
-			if (typeof context.setLineDash == "function") context.setLineDash([0]);
+		function transformX(x)
+		{
+			var timediv = me._timedivs[me._timeIdx];
+			return (w / 2.0) + x / timediv * (w/10.0);
 		}
 
-		var ch = me._channels[me._cursors.sourceCh];
+		function transformY(ch, y)
+		{
+				return -((y * (ch.inverted ? -1 : 1) / ch.range) + ch.display_offset) * (h / 8.0) + h/2;
+		}
 
-		if (!me._cursors.visible) return;
-		var selcolor = "#ffff00";
-		var unselcolor = "#00ffff";
-		DrawCursor(transformX(me._cursors.p1.x), 0, transformX(me._cursors.p1.x), h, me._cursors.selected & 1 ? selcolor : unselcolor, [4]);
-		DrawCursor(transformX(me._cursors.p2.x), 0, transformX(me._cursors.p2.x), h, me._cursors.selected & 2 ? selcolor : unselcolor, [5]);
-		DrawCursor(0, transformY(ch, me._cursors.p1.y), w, transformY(ch, me._cursors.p1.y), me._cursors.selected & 4 ? selcolor : unselcolor, [6]);
-		DrawCursor(0, transformY(ch, me._cursors.p2.y), w, transformY(ch, me._cursors.p2.y), me._cursors.selected & 8 ? selcolor : unselcolor, [7]);
+		function DrawCursors()
+		{
+			function DrawCursor(x1, y1, x2, y2, color, dash) {
+				if (typeof context.setLineDash == "function") context.setLineDash(dash);
+				context.save(); 
+				context.strokeStyle = color;
+				context.beginPath();
+				context.moveTo(x1+0.5, y1+0.5);
+				context.lineTo(x2+0.5, y2+0.5);
+				context.stroke();
+				context.restore();
+				if (typeof context.setLineDash == "function") context.setLineDash([0]);
+			}
+
+			var ch = me._channels[me._cursors.sourceCh];
+
+			if (!me._cursors.visible) return;
+			var selcolor = "#ffff00";
+			var unselcolor = "#00ffff";
+			DrawCursor(transformX(me._cursors.p1.x), 0, transformX(me._cursors.p1.x), h, me._cursors.selected & 1 ? selcolor : unselcolor, [4]);
+			DrawCursor(transformX(me._cursors.p2.x), 0, transformX(me._cursors.p2.x), h, me._cursors.selected & 2 ? selcolor : unselcolor, [5]);
+			DrawCursor(0, transformY(ch, me._cursors.p1.y), w, transformY(ch, me._cursors.p1.y), me._cursors.selected & 4 ? selcolor : unselcolor, [6]);
+			DrawCursor(0, transformY(ch, me._cursors.p2.y), w, transformY(ch, me._cursors.p2.y), me._cursors.selected & 8 ? selcolor : unselcolor, [7]);
+		}
+
+		DrawChannel(0);
+		DrawChannel(1);
+		context.stroke();
+		DrawCursors();
+
+		context.strokeStyle = "#ff0000";
+		context.beginPath();
+		DrawMath();
+
+		context.stroke();
 	}
-
-	DrawChannel(0);
-	DrawChannel(1);
-	context.stroke();
-	DrawCursors();
-
-	context.strokeStyle = "#ff0000";
-	context.beginPath();
-	DrawMath();
-
-	context.stroke();
 };
 
 visir.AgilentOscilloscope.prototype._SetVoltIdx = function(ch, idx)
@@ -872,6 +877,9 @@ visir.AgilentOscilloscope.prototype._UpdateDisplay = function()
 	//this._$elem.find(".voltage_ch1").text(this._FormatValue(this._voltages[this._voltIdx[0]]) + "V");
 	//this._$elem.find(".voltage_ch2").text(this._FormatValue(this._voltages[this._voltIdx[1]]) + "V");
 	//this._$elem.find(".timediv").text(this._FormatValue(this._timedivs[this._timeIdx]) + "s");
+
+	// var elem = this._$elem.find(".plot")[0];
+	// trace("Elem en este caso es undefined -> " + (typeof elem === "undefined"));
 
 	this._DrawPlot(this._$elem.find(".plot"));
 };
