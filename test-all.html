@@ -3,6 +3,7 @@
 <head>
 	<title>VISIR HTML5 Test</title>
 	<meta name="viewport" content="initial-scale=1.0" />
+	<meta charset="UTF-8" />
 	<link rel="stylesheet" href="instruments/breadboard/breadboard.css" />
 	<link rel="stylesheet" href="instruments/flukemultimeter/flukemultimeter.css" />
 	<link rel="stylesheet" href="instruments/tripledc/tripledc.css" />
@@ -67,6 +68,11 @@
 	<script type="text/javascript" src="instruments/oscilloscope.js"></script>
 	<script type="text/javascript" src="instruments/ag_oscilloscope/ag_oscilloscope.js"></script>
 
+	<!-- slider -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.0/css/bootstrap-slider.min.css">
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.0/bootstrap-slider.min.js"></script>
+	<script type="text/javascript" src="recorded.json"></script>
+
 	<script>
 
 	function init()
@@ -127,6 +133,54 @@
 		$("#hidelog").click( function() {
 			$("#logwindow").css("display", "none");
 		});
+
+		var recorded_data = RECORDED_DATA;
+		var instruments_for_slider = [flukedmm, flukedmm2, osc, tripledc, hp_func];
+
+		function loadTest(posTest) {
+			var test = recorded_data[posTest];
+			breadboard.LoadCircuit(test.circuit);
+			for (var i = 0; i < instruments_for_slider.length; i++) {
+				instruments_for_slider[i].ReadRequest(test.request);
+				instruments_for_slider[i].ReadResponse(test.response);
+			}
+		}
+
+		var generateTicksNumber = Array.apply(null, {length: recorded_data.length}).map(Function.call, Number);
+		var times = [];
+		for (var i = 0; i < recorded_data.length; i++) {
+			times.push(recorded_data[i].time);
+		}
+		var tickPositions = [];
+		var maxTime = times[times.length - 1];
+		for (var i = 0; i < times.length; i++) {
+			tickPositions.push((times[i] / maxTime) * 100);
+		}
+
+		var mySlider211 = $("#ex211").slider({
+			ticks: generateTicksNumber,
+			value: 0,
+			ticks_positions: tickPositions,
+			ticks_snap_bounds: 0.5,
+			step: 0.01
+		});
+
+		/* This loadTest(0) is performed to load the first EMPTY test (supposedly)... */
+		loadTest(0);
+
+		mySlider211.on("slide", function(slideEvt) {
+			if (times[slideEvt] !== undefined) {
+				$("#ex211SliderVal").text(times[slideEvt]);
+				loadTest(slideEvt);
+			}
+		});
+
+		mySlider211.on("change", function (objEvt) {
+			if (times[objEvt.value.newValue] !== undefined) {
+				$("#ex211SliderVal").text(times[objEvt.value.newValue]);
+				loadTest(objEvt.value.newValue);
+			}
+		});
 	}
 	//$( function() { init(); });
 	$( function() {	visir.Load(init); });
@@ -134,7 +188,13 @@
 </head>
 <body>
 	<button class="measure">Measure</button>
-	<br/>
+	<div>
+		<ul>
+			<input id="ex211" type="text" style="width: 1160px" />
+			</ul><ul>
+			<span id="ex211CurrentSliderValLabel">Tiempo del estado: <span id="ex211SliderVal">0</span></span>
+		</ul>
+	</div>
 	<div id="breadboard"></div>
 	<div id="dmm"></div>
 	<div id="dmm2"></div>
