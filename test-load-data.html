@@ -5,8 +5,16 @@
 	<link rel="stylesheet" href="instrumentframe/instrumentframe.css" />
 	<style>
 	</style>
+	<meta charset="UTF-8">
 	<script type="text/javascript" src="jquery-2.1.3.min.js"></script>
 	<script type="text/javascript" src="visir.js"></script>
+
+	<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"> -->
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.0/css/bootstrap-slider.min.css">
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.0/bootstrap-slider.min.js"></script>
+	<script type="text/javascript" src="recorded.json"></script>
+
 	<script>
 
     var request1 = "<protocol version=\"1.3\"><request sessionkey=\"776a95cc4118c273a3c574f689d976b6\"><circuit><circuitlist>W_X A29 DMM_1_1\nW_X A21 DMM_1_2\nR_X A25 A29 1k\nR_X A21 A25 10k\nDMM_1 DMM_1_1 DMM_1_2\n</circuitlist></circuit><multimeter id=\"1\"><dmm_function value=\"resistance\"></dmm_function><dmm_resolution value=\"3.5\"></dmm_resolution><dmm_range value=\"-1\"></dmm_range><dmm_autozero value=\"1\"></dmm_autozero></multimeter><functiongenerator id=\"1\"><fg_waveform value=\"sine\"></fg_waveform><fg_frequency value=\"1000\"></fg_frequency><fg_amplitude value=\"0.5\"></fg_amplitude><fg_offset value=\"5\"></fg_offset></functiongenerator><oscilloscope id=\"1\"><horizontal><horz_samplerate value=\"500\"></horz_samplerate><horz_refpos value=\"50\"></horz_refpos><horz_recordlength value=\"500\"></horz_recordlength></horizontal><channels><channel number=\"1\"><chan_enabled value=\"1\"></chan_enabled><chan_coupling value=\"dc\"></chan_coupling><chan_range value=\"1\"></chan_range><chan_offset value=\"0\"></chan_offset><chan_attenuation value=\"1\"></chan_attenuation></channel><channel number=\"2\"><chan_enabled value=\"1\"></chan_enabled><chan_coupling value=\"dc\"></chan_coupling><chan_range value=\"1\"></chan_range><chan_offset value=\"0\"></chan_offset><chan_attenuation value=\"1\"></chan_attenuation></channel></channels><trigger><trig_source value=\"channel 1\"></trig_source><trig_slope value=\"positive\"></trig_slope><trig_coupling value=\"dc\"></trig_coupling><trig_level value=\"0\"></trig_level><trig_mode value=\"autolevel\"></trig_mode><trig_timeout value=\"1\"></trig_timeout><trig_delay value=\"0\"></trig_delay></trigger><measurements><measurement number=\"1\"><meas_channel value=\"channel 1\"></meas_channel><meas_selection value=\"none\"></meas_selection></measurement><measurement number=\"2\"><meas_channel value=\"channel 1\"></meas_channel><meas_selection value=\"none\"></meas_selection></measurement><measurement number=\"3\"><meas_channel value=\"channel 1\"></meas_channel><meas_selection value=\"none\"></meas_selection></measurement></measurements><osc_autoscale value=\"0\"></osc_autoscale></oscilloscope><dcpower id=\"1\"><dc_outputs><dc_output channel=\"6V+\"><dc_voltage value=\"0\"></dc_voltage><dc_current value=\"0.5\"></dc_current></dc_output><dc_output channel=\"25V+\"><dc_voltage value=\"0\"></dc_voltage><dc_current value=\"0.5\"></dc_current></dc_output><dc_output channel=\"25V-\"><dc_voltage value=\"0\"></dc_voltage><dc_current value=\"0.5\"></dc_current></dc_output></dc_outputs></dcpower></request></protocol>";
@@ -64,6 +72,8 @@
 
     var reg;
 
+	var recorded_data = RECORDED_DATA;
+
 	function init()
 	{
 		function MakeMeasurement()
@@ -76,7 +86,7 @@
 		var transport = new visir.JSTransport(visir.SetWorking);
 		transport.onerror = function(err) { alert("Error: " + err); }
 
-		// visir.Config.Set("readOnly", true);
+		visir.Config.Set("readOnly", true);
 		transport.Connect(visir.Config.Get("mesServer"), "fnord");
 
 		reg = new visir.InstrumentRegistry();
@@ -99,7 +109,6 @@
 		$("#load_pack_1").click( function () {
 			reg.LoadExperiment(pack1.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(pack1.request);
                 reg.ReadResponse(pack1.response);
             }, 0);
@@ -108,7 +117,6 @@
 		$("#load_pack_1_1").click( function () {
 			reg.LoadExperiment(pack1.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request1_1);
                 reg.ReadResponse(pack1.response);
             }, 0);
@@ -117,7 +125,6 @@
 		$("#load_pack_1_2").click( function () {
 			reg.LoadExperiment(pack1.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request1_2);
                 reg.ReadResponse(pack1.response);
             }, 0);
@@ -126,7 +133,6 @@
 		$("#load_pack_1_3").click( function () {
 			reg.LoadExperiment(pack1.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request1_3);
                 reg.ReadResponse(pack1.response);
             }, 0);
@@ -135,7 +141,6 @@
 		$("#load_pack_2").click( function () {
 			reg.LoadExperiment(pack2.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(pack2.request);
                 reg.ReadResponse(pack2.response);
             }, 0);
@@ -144,7 +149,6 @@
 		$("#load_pack_2_1").click( function () {
 			reg.LoadExperiment(pack2.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request2_1);
                 reg.ReadResponse(pack2.response);
             }, 0);
@@ -153,7 +157,6 @@
 		$("#load_pack_2_2").click( function () {
 			reg.LoadExperiment(pack2.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request2_2);
                 reg.ReadResponse(pack2.response);
             }, 0);
@@ -162,7 +165,6 @@
 		$("#load_pack_3").click( function () {
 			reg.LoadExperiment(pack3.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(pack3.request);
                 reg.ReadResponse(pack3.response);
             }, 0);
@@ -171,7 +173,6 @@
 		$("#load_pack_3_1").click( function () {
 			reg.LoadExperiment(pack3.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request3_1);
                 reg.ReadResponse(pack3.response);
             }, 0);
@@ -180,7 +181,6 @@
 		$("#load_pack_3_2").click( function () {
 			reg.LoadExperiment(pack3.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request3_2);
                 reg.ReadResponse(pack3.response);
             }, 0);
@@ -189,7 +189,6 @@
 		$("#load_pack_3_3").click( function () {
 			reg.LoadExperiment(pack3.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request3_3);
                 reg.ReadResponse(pack3.response);
             }, 0);
@@ -198,7 +197,6 @@
 		$("#load_pack_3_4").click( function () {
 			reg.LoadExperiment(pack3.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request3_4);
                 reg.ReadResponse(pack3.response);
             }, 0);
@@ -207,7 +205,6 @@
 		$("#load_pack_3_5").click( function () {
 			reg.LoadExperiment(pack3.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request3_5);
                 reg.ReadResponse(pack3.response);
             }, 0);
@@ -216,7 +213,6 @@
 		$("#load_pack_3_6").click( function () {
 			reg.LoadExperiment(pack3.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request3_6);
                 reg.ReadResponse(pack3.response);
             }, 0);
@@ -225,7 +221,6 @@
 		$("#load_pack_3_7").click( function () {
 			reg.LoadExperiment(pack3.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request3_7);
                 reg.ReadResponse(pack3.response);
             }, 0);
@@ -234,7 +229,6 @@
 		$("#load_pack_3_8").click( function () {
 			reg.LoadExperiment(pack3.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request3_8);
                 reg.ReadResponse(pack3.response);
             }, 0);
@@ -243,11 +237,58 @@
 		$("#load_pack_4").click( function () {
 			reg.LoadExperiment(pack3.circuit, frame.GetInstrumentContainer());
             setTimeout(function() {
-				// DO SOMETHING
 				reg.ReadRequest(request4);
                 reg.ReadResponse(pack3.response);
             }, 0);
 		});
+
+		function loadTest(posTest) {
+			var test = recorded_data[posTest];
+			reg.LoadExperiment(test.circuit, frame.GetInstrumentContainer());
+			setTimeout(function () {
+				reg.ReadRequest(test.request);
+				reg.ReadResponse(test.response);
+			}, 0);
+		}
+
+		var generateTicksNumber = Array.apply(null, {length: recorded_data.length}).map(Function.call, Number);
+		var times = [];
+		for (var i = 0; i < recorded_data.length; i++) {
+			times.push(recorded_data[i].time);
+		}
+		var tickPositions = [];
+		var maxTime = times[times.length - 1];
+		for (var i = 0; i < times.length; i++) {
+			tickPositions.push((times[i] / maxTime) * 100);
+		}
+
+		var mySlider211 = $("#ex211").slider({
+			ticks: generateTicksNumber,
+			value: 0,
+			ticks_positions: tickPositions,
+			ticks_snap_bounds: 0.5,
+			step: 0.01
+		});
+
+		/* To load the first EMPTY test (supposedly) this loadTest(0) is performed... This is equivalent to 
+		"reg.LoadExperiment(emptyexperiment, frame.GetInstrumentContainer());" that is executed at the beginning of the 
+		init() function if the first measured experiment in RECORDED_DATA is empty.*/
+		loadTest(0);
+
+		mySlider211.on("slide", function(slideEvt) {
+			if (times[slideEvt] !== undefined) {
+				$("#ex211SliderVal").text(times[slideEvt]);
+				loadTest(slideEvt);
+			}
+		});
+
+		mySlider211.on("change", function (objEvt) {
+			if (times[objEvt.value.newValue] !== undefined) {
+				$("#ex211SliderVal").text(times[objEvt.value.newValue]);
+				loadTest(objEvt.value.newValue);
+			}
+		});
+
 	}
 	$( function() {	visir.Load(init); });
 </script>
@@ -257,6 +298,15 @@
 	<div id="instrumentframe"></div>
 	<br/>
 	<br/>
+
+	<div>
+		<ul>
+			<input id="ex211" type="text" style="width: 1160px" />
+			</ul><ul>
+			<span id="ex211CurrentSliderValLabel">Tiempo del estado: <span id="ex211SliderVal">0</span></span>
+		</ul>
+	</div>
+
 	<div>
 		<p>
 			<ul>
