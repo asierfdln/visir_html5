@@ -72,7 +72,8 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.0/css/bootstrap-slider.min.css">
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.0/bootstrap-slider.min.js"></script>
 	<script type="text/javascript" src="recorded.json"></script>
-
+	<script type="text/javascript" src="recorded_ext.json"></script>
+	
 	<script>
 
 	function init()
@@ -135,6 +136,7 @@
 		});
 
 		var recorded_data = RECORDED_DATA;
+		// var recorded_data = RECORDED_DATA_EXT;
 		var instruments_for_slider = [flukedmm, flukedmm2, osc, tripledc, hp_func];
 
 		function loadTest(posTest) {
@@ -144,6 +146,15 @@
 				instruments_for_slider[i].ReadRequest(test.request);
 				instruments_for_slider[i].ReadResponse(test.response);
 			}
+		}
+
+		function timeRepr(segs) {
+			hh = segs / 3600;
+			mm = (segs % 3600) / 60;
+			ss = segs % 60;
+			return Math.floor(hh).toLocaleString(undefined, {minimumIntegerDigits: 2})
+				+ ":" + Math.floor(mm).toLocaleString(undefined, {minimumIntegerDigits: 2})
+				+ ":" + Math.floor(ss).toLocaleString(undefined, {minimumIntegerDigits: 2});
 		}
 
 		var generateTicksNumber = Array.apply(null, {length: recorded_data.length}).map(Function.call, Number);
@@ -157,7 +168,7 @@
 			tickPositions.push((times[i] / maxTime) * 100);
 		}
 
-		var mySlider211 = $("#ex211").slider({
+		var mySlider = $("#slider").slider({
 			ticks: generateTicksNumber,
 			value: 0,
 			ticks_positions: tickPositions,
@@ -165,20 +176,84 @@
 			step: 0.01
 		});
 
+		$(function () {
+			$("body").click(function (e) {
+
+				// if (e.target.id == "slider" || $(e.target).parents("#slider").length) {
+				// 	console.log("Inside div");
+				// } else {
+				// 	console.log("Outside div");
+				// }
+
+				// if (e.target == mySlider.slider('getElement')) {
+				// 	console.log("Inside div");
+				// } else {
+				// 	console.log("Outside div");
+				// }
+
+			});
+		});
+
 		/* This loadTest(0) is performed to load the first EMPTY test (supposedly)... */
 		loadTest(0);
 
-		mySlider211.on("slide", function(slideEvt) {
-			if (times[slideEvt] !== undefined) {
-				$("#ex211SliderVal").text(times[slideEvt]);
-				loadTest(slideEvt);
+		mySlider.on("change", function (objEvt) {
+			if (times[objEvt.value.newValue] !== undefined) {
+				$("#sliderTimeElapsed").text(timeRepr(times[objEvt.value.newValue]));
+				loadTest(objEvt.value.newValue);
 			}
 		});
 
-		mySlider211.on("change", function (objEvt) {
-			if (times[objEvt.value.newValue] !== undefined) {
-				$("#ex211SliderVal").text(times[objEvt.value.newValue]);
-				loadTest(objEvt.value.newValue);
+		$("#skipleft").click(function () {
+			playingTheHits = 0;
+			$("#sliderStateValue").text("Pausado");
+			if (mySlider.slider('getValue') > 0 && playingTheHits == 0) {
+				mySlider.slider('setValue', mySlider.slider('getValue') - 1, false , true);
+			}
+		});
+
+		var playingTheHits = 0;
+		var offsetMs = 1000;
+		$("#play").click(function () {
+			$("#sliderStateValue").text("Reproduciendo...");
+			if (playingTheHits == 0) {
+				playingTheHits = 1;
+				var playloop = setInterval(function() {
+					if (mySlider.slider('getValue') < recorded_data.length - 1 && playingTheHits == 1) {
+						mySlider.slider('setValue', mySlider.slider('getValue') + 1, false , true);
+					} else if (mySlider.slider('getValue') == recorded_data.length - 1) {
+						playingTheHits = 0;
+						$("#sliderStateValue").text("Pausado");
+						clearInterval(playloop);
+						trace("Stopped playing the tests...");
+					} else if (playingTheHits == 0) {
+						$("#sliderStateValue").text("Pausado");
+						clearInterval(playloop);
+						trace("Stopped playing the tests...");
+					}
+				}, offsetMs);
+			}
+		});
+
+		$("#pause").click(function () {
+			playingTheHits = 0;
+			$("#sliderStateValue").text("Pausado");
+		});
+
+		$("#skipright").click(function () {
+			playingTheHits = 0;
+			$("#sliderStateValue").text("Pausado");
+			if (mySlider.slider('getValue') < recorded_data.length - 1) {
+				mySlider.slider('setValue', mySlider.slider('getValue') + 1, false , true);
+			}
+		});
+
+		var mySliderOffset = $("#sliderOffset").slider();
+
+		mySliderOffset.on("change", function (objEvt) {
+			if (objEvt.value.newValue !== undefined) {
+				$("#sliderOffsetNumber").text(objEvt.value.newValue);
+				offsetMs = objEvt.value.newValue * 1000;
 			}
 		});
 	}
@@ -188,13 +263,29 @@
 </head>
 <body>
 	<button class="measure">Measure</button>
-	<div>
+	<div id="sliderDIV">
 		<ul>
-			<input id="ex211" type="text" style="width: 1160px" />
+			<input id="slider" type="text" style="width: 1160px" />
 			</ul><ul>
-			<span id="ex211CurrentSliderValLabel">Tiempo del estado: <span id="ex211SliderVal">0</span></span>
+			<span id="sliderTime">Tiempo del estado: <span id="sliderTimeElapsed">00:00:00</span></span>
 		</ul>
 	</div>
+	<div>
+		<ul>
+			<a href="#" id="skipleft"><img src="repr_images/skipleft.png" /></a>
+			<a href="#" id="play"><img src="repr_images/play.png" /></a>
+			<a href="#" id="pause"><img src="repr_images/pause.png" /></a>
+			<a href="#" id="skipright"><img src="repr_images/skipright.png" /></a>
+			</ul><ul>
+			<span id="sliderState">Estado del slider: <span id="sliderStateValue">Pausado</span></span>
+		</ul>
+		<ul>
+			<input id="sliderOffset" data-slider-id='ex1Slider' type="text" data-slider-min="1" data-slider-max="20" data-slider-step="1" data-slider-value="1"/>
+			</ul><ul>
+			<span id="sliderOffset">Tiempo entre tests (segundos): <span id="sliderOffsetNumber">1</span></span>
+		</ul>
+	</div>
+	<br />
 	<div id="breadboard"></div>
 	<div id="dmm"></div>
 	<div id="dmm2"></div>
