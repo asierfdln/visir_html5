@@ -175,6 +175,7 @@
 			ticks_snap_bounds: 0.5,
 			step: 0.01
 		});
+        mySlider.data('isClickFromLoop', false);
 
 		$(function () {
 			$("body").click(function (e) {
@@ -201,6 +202,11 @@
 			if (times[objEvt.value.newValue] !== undefined) {
 				$("#sliderTimeElapsed").text(timeRepr(times[objEvt.value.newValue]));
 				loadTest(objEvt.value.newValue);
+
+                if (!mySlider.data('isClickFromLoop')) {
+                    clearInterval(mySlider.data('playloop'));
+                }
+                mySlider.data('isClickFromLoop', false);
 			}
 		});
 
@@ -220,18 +226,20 @@
 				playingTheHits = 1;
 				var playloop = setInterval(function() {
 					if (mySlider.slider('getValue') < recorded_data.length - 1 && playingTheHits == 1) {
+                        mySlider.data('isClickFromLoop', true);
 						mySlider.slider('setValue', mySlider.slider('getValue') + 1, false , true);
 					} else if (mySlider.slider('getValue') == recorded_data.length - 1) {
 						playingTheHits = 0;
 						$("#sliderStateValue").text("Pausado");
-						clearInterval(playloop);
+						clearInterval(mySlider.data('playloop'));
 						trace("Stopped playing the tests...");
 					} else if (playingTheHits == 0) {
 						$("#sliderStateValue").text("Pausado");
-						clearInterval(playloop);
+						clearInterval(mySlider.data('playloop'));
 						trace("Stopped playing the tests...");
 					}
 				}, offsetMs);
+                mySlider.data('playloop', playloop);
 			}
 		});
 
