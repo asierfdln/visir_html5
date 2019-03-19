@@ -23,9 +23,7 @@ visir.Multimeter.prototype.GetResolution = function() { return this._resolution;
 
 visir.Multimeter.prototype.GetResult = function() { return this._result }
 
-// YO
-visir.Multimeter.prototype.ReadRequest = function(request)
-{
+visir.Multimeter.prototype.ReadRequest = function(request) {
 	var $xml = $(request);
 	var $multimeter = $xml.find("multimeter[id=" + this._id + "]"); // el corchete ese ni debería estar ahí para que funcionara bien...
 	if ($multimeter.length > 0) {
@@ -56,7 +54,6 @@ visir.Multimeter.prototype.ReadRequest = function(request)
 		}
 	}
 }
-// /YO
 	
 visir.Multimeter.prototype.WriteRequest = function()
 {

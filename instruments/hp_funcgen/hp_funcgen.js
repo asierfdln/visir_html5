@@ -122,26 +122,6 @@ visir.HPFunctionGenerator = function(id, elem)
 
 extend(visir.HPFunctionGenerator, visir.FunctionGenerator)
 
-// YO
-//visir.FunctionGenerator.prototype.ReadRequest = function(request)
-//{
-//	var $xml = $(request);
-//	var $functiongenerator = $xml.find("functiongenerator[id=" + this._id + "]");
-//	if ($functiongenerator.length > 0) {
-//		this.SetActiveValue("freq");
-//		var waveform = $functiongenerator.find("fg_waveform").attr("value");
-//		this.SetWaveform(waveform);
-//		var frequency = $functiongenerator.find("fg_frequency").attr("value");
-//		this._frequency = frequency;
-//		var amplitude = $functiongenerator.find("fg_amplitude").attr("value");
-//		this._amplitude = amplitude;
-//		var offset = $functiongenerator.find("fg_offset").attr("value");
-//		this._offset = offset;
-//		this._UpdateDisplay();
-//	}
-//}
-// /YO
-
 function numDigits(val)
 {
 	val = Math.abs(val);

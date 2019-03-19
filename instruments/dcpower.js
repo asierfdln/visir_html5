@@ -37,7 +37,6 @@ visir.DCPower.prototype.WriteRequest = function()
 	return $("<root />").append($xml).html();
 },
 
-// YO
 visir.DCPower.prototype.ReadRequest = function(request)
 {
 	var $xml = $(request);
@@ -58,7 +57,6 @@ visir.DCPower.prototype.ReadRequest = function(request)
 		this._SetActiveChannel("6V+");
 	}
 }
-// /YO
 
 visir.DCPower.prototype.ReadResponse = function(response) {
 	var me = this;

@@ -110,9 +110,7 @@ visir.Oscilloscope.prototype.WriteRequest = function()
 	return $("<root />").append($xml).html();
 }
 
-// YO
-visir.Oscilloscope.prototype.ReadRequest = function(request)
-{
+visir.Oscilloscope.prototype.ReadRequest = function(request) {
 	var $xml = $(request);
 	var $oscilloscope = $xml.find("oscilloscope[id=" + this._id + "]");
 	if ($oscilloscope.length > 0) {
@@ -235,7 +233,6 @@ visir.Oscilloscope.prototype.ReadRequest = function(request)
 		this._autoScale = Number(autoscale);
 	}
 }
-// /YO
 
 visir.Oscilloscope.prototype.ReadResponse = function(response) {
 	var me = this;

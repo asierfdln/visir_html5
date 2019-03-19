@@ -27,7 +27,6 @@ visir.FunctionGenerator.prototype.WriteRequest = function()
 
 visir.FunctionGenerator.prototype.ReadResponse = function(response) {}
 
-// YO
 visir.FunctionGenerator.prototype.ReadRequest = function(request)
 {
 	var $xml = $(request);
@@ -62,7 +61,6 @@ visir.FunctionGenerator.prototype.ReadRequest = function(request)
 		this._UpdateDisplay();
 	}
 }
-// /YO
 
 visir.FunctionGenerator.prototype.GetWaveform = function() { return this._waveform; }
 visir.FunctionGenerator.prototype.SetWaveform = function(waveform) { this._waveform = waveform; }
