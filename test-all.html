@@ -73,6 +73,10 @@
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.0/bootstrap-slider.min.js"></script>
 	<script type="text/javascript" src="recorded.json"></script>
 	<script type="text/javascript" src="recorded_ext.json"></script>
+
+	<!-- bootstrap CSS & JS-->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 	
 	<script>
 
@@ -169,31 +173,15 @@
 		}
 
 		var mySlider = $("#slider").slider({
-			ticks: generateTicksNumber,
 			value: 0,
+			tooltip: 'hide',
+			ticks: generateTicksNumber,
 			ticks_positions: tickPositions,
 			ticks_snap_bounds: 0.5,
 			step: 0.01
 		});
-        mySlider.data('isClickFromLoop', false);
 
-		$(function () {
-			$("body").click(function (e) {
-
-				// if (e.target.id == "slider" || $(e.target).parents("#slider").length) {
-				// 	console.log("Inside div");
-				// } else {
-				// 	console.log("Outside div");
-				// }
-
-				// if (e.target == mySlider.slider('getElement')) {
-				// 	console.log("Inside div");
-				// } else {
-				// 	console.log("Outside div");
-				// }
-
-			});
-		});
+		mySlider.data('isClickFromLoop', false);
 
 		/* This loadTest(0) is performed to load the first EMPTY test (supposedly)... */
 		loadTest(0);
@@ -202,66 +190,120 @@
 			if (times[objEvt.value.newValue] !== undefined) {
 				$("#sliderTimeElapsed").text(timeRepr(times[objEvt.value.newValue]));
 				loadTest(objEvt.value.newValue);
-
-                if (!mySlider.data('isClickFromLoop')) {
-                    clearInterval(mySlider.data('playloop'));
-                }
-                mySlider.data('isClickFromLoop', false);
-			}
-		});
-
-		$("#skipleft").click(function () {
-			playingTheHits = 0;
-			$("#sliderStateValue").text("Pausado");
-			if (mySlider.slider('getValue') > 0 && playingTheHits == 0) {
-				mySlider.slider('setValue', mySlider.slider('getValue') - 1, false , true);
+				if (!mySlider.data('isClickFromLoop')) {
+					if (playingTheHits == 1) {
+						$("#pause-play-toggle-span").toggleClass('glyphicon-play').toggleClass('glyphicon-pause');
+					}
+					playingTheHits = 0;
+					// $("#sliderStateValue").text("Pausado");
+					clearInterval(mySlider.data('stopWatch'));
+					$("#stopWatchTimeElapsed").text(timeRepr(times[mySlider.slider('getValue')]));
+					clearInterval(mySlider.data('playloop'));
+				}
+				mySlider.data('isClickFromLoop', false);
 			}
 		});
 
 		var playingTheHits = 0;
-		var offsetMs = 1000;
-		$("#play").click(function () {
-			$("#sliderStateValue").text("Reproduciendo...");
-			if (playingTheHits == 0) {
-				playingTheHits = 1;
-				var playloop = setInterval(function() {
-					if (mySlider.slider('getValue') < recorded_data.length - 1 && playingTheHits == 1) {
-                        mySlider.data('isClickFromLoop', true);
-						mySlider.slider('setValue', mySlider.slider('getValue') + 1, false , true);
-					} else if (mySlider.slider('getValue') == recorded_data.length - 1) {
-						playingTheHits = 0;
-						$("#sliderStateValue").text("Pausado");
-						clearInterval(mySlider.data('playloop'));
-						trace("Stopped playing the tests...");
-					} else if (playingTheHits == 0) {
-						$("#sliderStateValue").text("Pausado");
-						clearInterval(mySlider.data('playloop'));
-						trace("Stopped playing the tests...");
-					}
-				}, offsetMs);
-                mySlider.data('playloop', playloop);
+		var k = 1;
+
+		function startInterval(secs) {
+			var playloop = setInterval(function () {
+				if (mySlider.slider('getValue') < recorded_data.length - 1 && playingTheHits == 1) {
+					mySlider.data('isClickFromLoop', true);
+					mySlider.slider('setValue', mySlider.slider('getValue') + 1, false, true);
+					clearInterval(mySlider.data('stopWatch'));
+					$("#stopWatchTimeElapsed").text(timeRepr(times[mySlider.slider('getValue')]));
+					startStopWatch();
+					clearInterval(mySlider.data('playloop'));
+					startInterval(k * 1000 * (times[mySlider.slider('getValue') + 1] - times[mySlider.slider('getValue')]));
+				} else if (mySlider.slider('getValue') == recorded_data.length - 1) {
+					$("#pause-play-toggle-span").toggleClass('glyphicon-play').toggleClass('glyphicon-pause');
+					playingTheHits = 0;
+					// $("#sliderStateValue").text("Pausado");
+					clearInterval(mySlider.data('stopWatch'));
+					$("#stopWatchTimeElapsed").text(timeRepr(times[mySlider.slider('getValue')]));
+					clearInterval(mySlider.data('playloop'));
+				} else if (playingTheHits == 0) {
+					// $("#sliderStateValue").text("Pausado");
+					clearInterval(mySlider.data('stopWatch'));
+					$("#stopWatchTimeElapsed").text(timeRepr(times[mySlider.slider('getValue')]));
+					clearInterval(mySlider.data('playloop'));
+				}
+			}, secs);
+			mySlider.data('playloop', playloop);
+		}
+
+		var timeElapsed = 0;
+		function startStopWatch() {
+			timeElapsed = times[mySlider.slider('getValue')];
+			var stopWatch = setInterval(function () {
+				timeElapsed++;
+				$("#stopWatchTimeElapsed").text(timeRepr(timeElapsed));
+			}, k * 1000);
+			mySlider.data('stopWatch', stopWatch);
+		}
+
+		$("#skipleft").click(function () {
+			if (playingTheHits == 1) {
+				$("#pause-play-toggle-span").toggleClass('glyphicon-play').toggleClass('glyphicon-pause');
 			}
+			playingTheHits = 0;
+			// $("#sliderStateValue").text("Pausado");
+			if (mySlider.slider('getValue') > 0 && playingTheHits == 0) {
+				mySlider.slider('setValue', mySlider.slider('getValue') - 1, false , true);
+			}
+			$("#stopWatchTimeElapsed").text(timeRepr(times[mySlider.slider('getValue')]));
 		});
 
-		$("#pause").click(function () {
-			playingTheHits = 0;
-			$("#sliderStateValue").text("Pausado");
+		$("#pause-play-toggle").click(function () {
+			if (playingTheHits == 0) {
+				$("#pause-play-toggle-span").toggleClass('glyphicon-play').toggleClass('glyphicon-pause');
+				playingTheHits = 1;
+				// $("#sliderStateValue").text("Reproduciendo...");
+				startInterval(k * 1000 * (times[mySlider.slider('getValue') + 1] - times[mySlider.slider('getValue')]));
+				startStopWatch();
+			} else {
+				$("#pause-play-toggle-span").toggleClass('glyphicon-play').toggleClass('glyphicon-pause');
+				playingTheHits = 0;
+				// $("#sliderStateValue").text("Pausado");
+			}
 		});
 
 		$("#skipright").click(function () {
+			if (playingTheHits == 1) {
+				$("#pause-play-toggle-span").toggleClass('glyphicon-play').toggleClass('glyphicon-pause');
+			}
 			playingTheHits = 0;
-			$("#sliderStateValue").text("Pausado");
+			// $("#sliderStateValue").text("Pausado");
 			if (mySlider.slider('getValue') < recorded_data.length - 1) {
 				mySlider.slider('setValue', mySlider.slider('getValue') + 1, false , true);
 			}
+			$("#stopWatchTimeElapsed").text(timeRepr(times[mySlider.slider('getValue')]));
 		});
 
-		var mySliderOffset = $("#sliderOffset").slider();
+		var speedTicks = [0.5, 0.75, 1, 1.5, 2];
+		var diff = 100 / (speedTicks.length - 1);
+		var tickPositionsSpeed = [];
+		var pos = 0;
+		for (var i = 0; i < speedTicks.length; i++) {
+			tickPositionsSpeed.push(pos);
+			pos += diff;
+		}
 
-		mySliderOffset.on("change", function (objEvt) {
-			if (objEvt.value.newValue !== undefined) {
-				$("#sliderOffsetNumber").text(objEvt.value.newValue);
-				offsetMs = objEvt.value.newValue * 1000;
+		var mySliderSpeed = $("#sliderSpeed").slider({
+			value: 1,
+			tooltip: 'hide',
+			ticks: speedTicks,
+			ticks_positions: tickPositionsSpeed,
+			ticks_labels: speedTicks.map(function(x) {return "x" + x}),
+			ticks_snap_bounds: 0.5,
+			step: 0.01
+		});
+
+		mySliderSpeed.on("change", function (objEvt) {
+			if (speedTicks.includes(objEvt.value.newValue)) {
+				k = 1 / objEvt.value.newValue;
 			}
 		});
 	}
@@ -270,37 +312,55 @@
 </script>
 </head>
 <body>
-	<button class="measure">Measure</button>
-	<div id="sliderDIV">
-		<ul>
-			<input id="slider" type="text" style="width: 1160px" />
-			</ul><ul>
-			<span id="sliderTime">Tiempo del estado: <span id="sliderTimeElapsed">00:00:00</span></span>
-		</ul>
-	</div>
-	<div>
-		<ul>
-			<a href="#" id="skipleft"><img src="repr_images/skipleft.png" /></a>
-			<a href="#" id="play"><img src="repr_images/play.png" /></a>
-			<a href="#" id="pause"><img src="repr_images/pause.png" /></a>
-			<a href="#" id="skipright"><img src="repr_images/skipright.png" /></a>
-			</ul><ul>
-			<span id="sliderState">Estado del slider: <span id="sliderStateValue">Pausado</span></span>
-		</ul>
-		<ul>
-			<input id="sliderOffset" data-slider-id='ex1Slider' type="text" data-slider-min="1" data-slider-max="20" data-slider-step="1" data-slider-value="1"/>
-			</ul><ul>
-			<span id="sliderOffset">Tiempo entre tests (segundos): <span id="sliderOffsetNumber">1</span></span>
-		</ul>
+	<!-- <button class="measure">Measure</button> -->
+	<br />
+	<br />
+	<div style="position: sticky; top: 0px; background: white; z-index: 100;">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<input id="slider" type="text" style="width: 100%" />
+				</div>
+			</div>
+			<br />
+			<br />
+			<div class="row">
+				<div class="col-md-4 text-center">
+					<span id="sliderTime">Tiempo del estado: <span id="sliderTimeElapsed">00:00:00</span></span>
+					<br />
+					<span id="stopWatch">Tiempo transcurrido: <span id="stopWatchTimeElapsed">00:00:00</span></span>
+				</div>
+				<div class="col-md-4 text-center">
+					<button href="#" id="skipleft" type="button">
+						<span id="skipleft-span" class="glyphicon glyphicon-step-backward"></span>
+					</button>
+					<button href="#" id="pause-play-toggle" type="button">
+						<span href="#" id="pause-play-toggle-span" class="glyphicon glyphicon-play"
+							aria-hidden="play-pause"></span>
+					</button>
+					<button href="#" id="skipright" type="button">
+						<span id="skipright-span" class="glyphicon glyphicon-step-forward"></span>
+					</button>
+					<br />
+					<!-- <span id="sliderState">Slider: <span href="#" id="sliderStateValue">Pausado</span></span> -->
+				</div>
+				<div class="col-md-4 text-center">
+					<input id="sliderSpeed" type="text" />
+				</div>
+			</div>
+		</div>
 	</div>
 	<br />
-	<div id="breadboard"></div>
-	<div id="dmm"></div>
-	<div id="dmm2"></div>
-	<div id="oscilloscope"></div>
-	<div id="hp_funcgen"></div>
-	<div id="tripledc"></div>
-	<div id="hp_funcgen"></div>
+	<br />
+	<div>
+		<div id="breadboard"></div>
+		<div id="dmm"></div>
+		<div id="dmm2"></div>
+		<div id="oscilloscope"></div>
+		<div id="hp_funcgen"></div>
+		<div id="tripledc"></div>
+		<div id="hp_funcgen"></div>
+	</div>
 	<div id="bottom">
 		<button class="measure">Measure</button>
 	</div>
