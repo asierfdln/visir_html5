@@ -68,8 +68,7 @@ visir.TripleDC = function(id, elem)
 		return deg;
 	}
 
-	if(!visir.Config.Get("readOnly"))
-	{
+	if(!visir.Config.Get("readOnly")) {
 		elem.find(".knob").turnable({offset: 90, turn: handleTurn });
 
 		// make all buttons updownButtons
@@ -93,6 +92,20 @@ visir.TripleDC = function(id, elem)
 				var aCh = me._GetActiveChannel();
 				trace("digit: " + (aCh.digit -1));
 				me._SetActiveValue(aCh.voltage, aCh.digit - 1);
+		});
+	} else {
+		elem.find("div.button_p6v").updownButton();
+		elem.find("div.button_p25v").updownButton();
+		elem.find("div.button_m25v").updownButton();
+
+		elem.find("div.button_p6v").click( function() {
+			me._SetActiveChannel("6V+");
+		});
+		elem.find("div.button_p25v").click( function() {
+			me._SetActiveChannel("25V+");
+		});
+		elem.find("div.button_m25v").click( function() {
+			me._SetActiveChannel("25V-");
 		});
 	}
 

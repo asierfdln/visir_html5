@@ -95,14 +95,13 @@ visir.HPFunctionGenerator = function(id, elem)
 		}
 	}
 
-	if(!visir.Config.Get("readOnly"))
-	{
+	if(!visir.Config.Get("readOnly")) {
 		elem.find(".knob").turnable({offset: 90, turn: handleTurn });
 
 		// make all buttons updownButtons
 		elem.find(".button").updownButton();
 
-		var buttons = [ "sine", "square", "triangle", "rampup", "noise",
+		var buttons = ["sine", "square", "triangle", "rampup", "noise",
 			"arb", "enter", "freq", "ampl", "offset",
 			"single", "recall", "enternumber", "shift", "up",
 			"down", "right", "left"] ;
@@ -110,6 +109,15 @@ visir.HPFunctionGenerator = function(id, elem)
 		for (var i in buttons) {
 			elem.find("div.button_" + buttons[i]).click( buttonPressGen(buttons[i]) );
 		}
+	} else {
+		elem.find(".button_freq").updownButton();
+		elem.find("div.button_freq").click( buttonPressGen("freq") );
+
+		elem.find(".button_ampl").updownButton();
+		elem.find("div.button_ampl").click( buttonPressGen("ampl") );
+
+		elem.find(".button_offset").updownButton();
+		elem.find("div.button_offset").click( buttonPressGen("offset") );
 	}
 
 	var blink = elem.find(".hp_funcgen .num_display");
