@@ -1,0 +1,23 @@
+var CONFIG_HANDLER = {
+    "tripledc_prohbChannels": ["25V+", "25V-"],
+    "tripledc_min": {
+        "6V+": 0, 
+        "25V+": 0, 
+        "25V-": -5},
+    "tripledc_max": {
+        "6V+": 3, 
+        "25V+": 7, 
+        "25V-": 0
+    },
+    "hpfuncgen_prohbWaves": ["square", "triangle", "rampup"],
+    "hpfuncgen_min": {
+        "freq": 0,
+        "ampl": 0,
+        "offset": 0
+    },
+    "hpfuncgen_max":{
+        // "freq": ,
+        // "ampl": ,
+        // "offset": 
+    }
+}
