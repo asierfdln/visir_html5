@@ -15,6 +15,8 @@ visir.HPFunctionGenerator = function(id, elem)
 	this._enterMode = this.NORMAL;
 	this._enterNumStr = "";
 
+	this._config = "nothing";
+
 	/* the multipliers are used to avoid storing the values in floating point
 	which will cause problems when trying to display the values */
 	this._values = {
@@ -229,6 +231,7 @@ visir.HPFunctionGenerator.prototype._NormalButtonPressed = function(buttonName)
 			trace("unknown button in normal mode: " + buttonName);
 			break;
 	}
+	this.LoadHandler(this._config);
 }
 
 visir.HPFunctionGenerator.prototype._EnterNumButtonPressed = function(buttonName)
@@ -371,6 +374,7 @@ visir.HPFunctionGenerator.prototype._SetActiveValue = function(value, digit) {
 				throw "Unknown value type";
 		}
 	}
+	this.LoadHandler(this._config);
 	this._UpdateDisplay();
 }
 
@@ -386,4 +390,66 @@ visir.HPFunctionGenerator.prototype._IncDigit = function() {
 	//val.value += Math.pow(10, val.digit);
 	var tmp = val.value + Math.pow(10, val.digit);
 	this._SetActiveValue(tmp, val.digit);
+}
+
+var currentValues = ["freq", "ampl", "offset"];
+var boundaryValues = ["noboundary", "noboundary", "noboundary"];
+var errors = "";
+var clearErrors = true;
+visir.HPFunctionGenerator.prototype.LoadHandler = function (config) {
+	if (config !== "nothing") {
+		this._config = config;
+		var currentValue = this._currentValue;
+		if (config.hpfuncgen_prohbWaves.includes(this.GetWaveform())) {
+			alert("This experiment does not admit the " + this.GetWaveform() + " waveform.");
+		} else {
+
+			/*
+
+			for (var i = 0; i < currentValues.length; i++) {
+				if (this._values[currentValues[i]].value > config.hpfuncgen_max[currentValues[i]]) {
+					if (boundaryValues[i] == "noboundary") {
+						errors += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the " + currentValues[i] + " parameter.\n\n");
+						boundaryValues[i] = this._values[currentValues[i]].value;
+					} else {
+						if (!(this._values[currentValues[i]].value < boundaryValues[i])) {
+							errors += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the " + currentValues[i] + " parameter.\n\n");
+						}
+						boundaryValues[i] = this._values[currentValues[i]].value;
+					}
+				} else if (this._values[currentValues[i]].value < config.hpfuncgen_min[currentValues[i]]) {
+					if (boundaryValues[i] == "noboundary") {
+						errors += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the " + currentValues[i] + " parameter.\n\n");
+						boundaryValues[i] = this._values[currentValues[i]].value;
+					} else {
+						if (!(this._values[currentValues[i]].value > boundaryValues[i])) {
+							errors += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the " + currentValues[i] + " parameter.\n\n");
+						}
+						boundaryValues[i] = this._values[currentValues[i]].value;
+					}
+				} else {
+					boundaryValues[i] = "noboundary";
+				}
+			}
+			if (errors !== "") {
+				alert(errors);
+			}
+			for (var i = 0; i < boundaryValues.length; i++) {
+				if (boundaryValues[i] !== "noboundary") {
+					clearErrors = false;
+					break;
+				}
+			}
+			if (clearErrors) {
+				errors = "";
+			}
+
+			*/
+
+		}
+	}
 }
