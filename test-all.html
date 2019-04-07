@@ -120,10 +120,13 @@
 		var osc = new visir.AgilentOscilloscope(1, $("#oscilloscope"), { MeasureCalling: MakeMeasurement, CheckToContinueCalling: function() { return true; } });
 
 		var tripledc = new visir.TripleDC(1, $("#tripledc"));
-		tripledc.LoadHandler(config_handler);
 
 		var hp_func = new visir.HPFunctionGenerator(1, $("#hp_funcgen"));
-		hp_func.LoadHandler(config_handler);
+
+		setTimeout(function () { // This is to avoid the initial setup of the instruments, which involve multiple value changes...
+			tripledc.LoadHandler(config_handler);
+			hp_func.LoadHandler(config_handler);
+		}, 3000);
 
 		$(".measure").click( function() {
 			/*transport.Request(breadboard.WriteRequest()

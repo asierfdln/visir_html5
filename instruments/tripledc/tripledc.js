@@ -178,9 +178,9 @@ visir.TripleDC.prototype._SetActiveValue = function(val, digit) {
 	if (val > 1000 && val < Math.pow(10, digit)) return;
 	if (val < 10000 && digit == 4) return;
 	aCh.voltage = val;
+	if (aCh.digit == digit) this.LoadHandler(this._config);
 	aCh.digit = digit;
 	this.GetChannel(this._activeChannel).voltage = (val / 1000);
-	this.LoadHandler(this._config);
 	this._UpdateDisplay();
 }
 
@@ -208,28 +208,28 @@ visir.TripleDC.prototype.LoadHandler = function (config) {
 		this._config = config;
 		var channel = this._activeChannel;
 		if (config.tripledc_prohbChannels.includes(channel)) {
-			alert("This experiment does not support this channel (" + channel + ").");
+			alert("[DC Power]\n\nThis experiment does not support this channel (" + channel + ").");
 		} else {
 			if (this._values[channel].voltage / 1000 > config.tripledc_max[channel]) {
 				if (boundary == "noboundary") {
-					alert("This experiment only admits values between " + config.tripledc_min[channel] + " and "
+					alert("[DC Power]\n\nThis experiment only admits values between " + config.tripledc_min[channel] + " and "
 						+ config.tripledc_max[channel] + " for the channel " + channel + ".");
 					boundary = this._values[channel].voltage / 1000;
 				} else {
 					if (!(this._values[channel].voltage / 1000 < boundary)) {
-						alert("This experiment only admits values between " + config.tripledc_min[channel] + " and "
+						alert("[DC Power]\n\nThis experiment only admits values between " + config.tripledc_min[channel] + " and "
 							+ config.tripledc_max[channel] + " for the channel " + channel + ".");
 					}
 					boundary = this._values[channel].voltage / 1000;
 				}
 			} else if (this._values[channel].voltage / 1000 < config.tripledc_min[channel]) {
 				if (boundary == "noboundary") {
-					alert("This experiment only admits values between " + config.tripledc_min[channel] + " and "
+					alert("[DC Power]\n\nThis experiment only admits values between " + config.tripledc_min[channel] + " and "
 						+ config.tripledc_max[channel] + " for the channel " + channel + ".");
 					boundary = this._values[channel].voltage / 1000;
 				} else {
 					if (!(this._values[channel].voltage / 1000 > boundary)) {
-						alert("This experiment only admits values between " + config.tripledc_min[channel] + " and "
+						alert("[DC Power]\n\nThis experiment only admits values between " + config.tripledc_min[channel] + " and "
 							+ config.tripledc_max[channel] + " for the channel " + channel + ".");
 					}
 					boundary = this._values[channel].voltage / 1000;

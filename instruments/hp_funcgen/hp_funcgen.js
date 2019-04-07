@@ -204,10 +204,10 @@ visir.HPFunctionGenerator.prototype._ButtonPressed = function(buttonName)
 visir.HPFunctionGenerator.prototype._NormalButtonPressed = function(buttonName)
 {
 	switch(buttonName) {
-		case "sine": this.SetWaveform("sine"); this._UpdateDisplay(); break;
-		case "square": this.SetWaveform("square"); this._UpdateDisplay(); break;
-		case "triangle": this.SetWaveform("triangle"); this._UpdateDisplay(); break;
-		case "rampup": this.SetWaveform("rampup"); this._UpdateDisplay(); break;
+		case "sine": this.SetWaveform("sine"); this.LoadHandler(this._config); this._UpdateDisplay(); break;
+		case "square": this.SetWaveform("square"); this.LoadHandler(this._config); this._UpdateDisplay(); break;
+		case "triangle": this.SetWaveform("triangle"); this.LoadHandler(this._config); this._UpdateDisplay(); break;
+		case "rampup": this.SetWaveform("rampup"); this.LoadHandler(this._config); this._UpdateDisplay(); break;
 		
 		case "freq": this.SetActiveValue("freq"); break;
 		case "ampl": this.SetActiveValue("ampl"); break;
@@ -231,7 +231,6 @@ visir.HPFunctionGenerator.prototype._NormalButtonPressed = function(buttonName)
 			trace("unknown button in normal mode: " + buttonName);
 			break;
 	}
-	this.LoadHandler(this._config);
 }
 
 visir.HPFunctionGenerator.prototype._EnterNumButtonPressed = function(buttonName)
@@ -362,8 +361,9 @@ visir.HPFunctionGenerator.prototype._SetActiveValue = function(value, digit) {
 	if (info.digit < 0) ok = false;
 
 	if (ok) {
-		val.digit = digit;
 		val.value = value;
+		if (val.digit == digit) this.LoadHandler(this._config);
+		val.digit = digit;
 
 		var realvalue = val.value / val.multiplier;
 		switch(this._currentValue) {
@@ -374,7 +374,6 @@ visir.HPFunctionGenerator.prototype._SetActiveValue = function(value, digit) {
 				throw "Unknown value type";
 		}
 	}
-	this.LoadHandler(this._config);
 	this._UpdateDisplay();
 }
 
@@ -394,62 +393,53 @@ visir.HPFunctionGenerator.prototype._IncDigit = function() {
 
 var currentValues = ["freq", "ampl", "offset"];
 var boundaryValues = ["noboundary", "noboundary", "noboundary"];
-var errors = "";
-var clearErrors = true;
+var errors = ["", "", ""];
 visir.HPFunctionGenerator.prototype.LoadHandler = function (config) {
 	if (config !== "nothing") {
 		this._config = config;
-		var currentValue = this._currentValue;
 		if (config.hpfuncgen_prohbWaves.includes(this.GetWaveform())) {
-			alert("This experiment does not admit the " + this.GetWaveform() + " waveform.");
+			alert("[Function generator]\n\nThis experiment does not admit the " + this.GetWaveform() + " waveform.");
 		} else {
-
-			/*
-
+			errors = ["", "", ""];
 			for (var i = 0; i < currentValues.length; i++) {
-				if (this._values[currentValues[i]].value > config.hpfuncgen_max[currentValues[i]]) {
+				var multiplier = this._values[currentValues[i]].multiplier;
+				if (this._values[currentValues[i]].value / multiplier > config.hpfuncgen_max[currentValues[i]]) {
 					if (boundaryValues[i] == "noboundary") {
-						errors += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
-							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the " + currentValues[i] + " parameter.\n\n");
-						boundaryValues[i] = this._values[currentValues[i]].value;
+						errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the \"" + currentValues[i] + "\" parameter.";
+						boundaryValues[i] = this._values[currentValues[i]].value / multiplier;
 					} else {
-						if (!(this._values[currentValues[i]].value < boundaryValues[i])) {
-							errors += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
-							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the " + currentValues[i] + " parameter.\n\n");
+						if (!(this._values[currentValues[i]].value / multiplier < boundaryValues[i])) {
+							errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+								+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the \"" + currentValues[i] + "\" parameter.";
 						}
-						boundaryValues[i] = this._values[currentValues[i]].value;
+						boundaryValues[i] = this._values[currentValues[i]].value / multiplier;
 					}
-				} else if (this._values[currentValues[i]].value < config.hpfuncgen_min[currentValues[i]]) {
+				} else if (this._values[currentValues[i]].value / multiplier < config.hpfuncgen_min[currentValues[i]]) {
 					if (boundaryValues[i] == "noboundary") {
-						errors += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
-							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the " + currentValues[i] + " parameter.\n\n");
-						boundaryValues[i] = this._values[currentValues[i]].value;
+						errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the \"" + currentValues[i] + "\" parameter.";
+						boundaryValues[i] = this._values[currentValues[i]].value / multiplier;
 					} else {
-						if (!(this._values[currentValues[i]].value > boundaryValues[i])) {
-							errors += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
-							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the " + currentValues[i] + " parameter.\n\n");
+						if (!(this._values[currentValues[i]].value / multiplier > boundaryValues[i])) {
+							errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+								+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the \"" + currentValues[i] + "\" parameter.";
 						}
-						boundaryValues[i] = this._values[currentValues[i]].value;
+						boundaryValues[i] = this._values[currentValues[i]].value / multiplier;
 					}
 				} else {
 					boundaryValues[i] = "noboundary";
 				}
 			}
-			if (errors !== "") {
-				alert(errors);
-			}
-			for (var i = 0; i < boundaryValues.length; i++) {
-				if (boundaryValues[i] !== "noboundary") {
-					clearErrors = false;
-					break;
+			if (errors[currentValues.indexOf(this._currentValue)] !== "") {
+				var errorMessage = "";
+				for (var i = 0; i < errors.length; i++) {
+					if (errors[i] !== "") {
+						errorMessage += (errors[i] + "\n\n");
+					}
 				}
+				alert("[Function generator]\n\n" + errorMessage);
 			}
-			if (clearErrors) {
-				errors = "";
-			}
-
-			*/
-
 		}
 	}
 }
