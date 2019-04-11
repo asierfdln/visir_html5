@@ -16,6 +16,7 @@ visir.HPFunctionGenerator = function(id, elem)
 	this._enterNumStr = "";
 
 	this._config = "nothing";
+	this.boundaries = ["noboundary", "noboundary", "noboundary", "noboundary"]; // waveform, freq, ampl, offset
 
 	/* the multipliers are used to avoid storing the values in floating point
 	which will cause problems when trying to display the values */
@@ -391,54 +392,67 @@ visir.HPFunctionGenerator.prototype._IncDigit = function() {
 	this._SetActiveValue(tmp, val.digit);
 }
 
-var currentValues = ["freq", "ampl", "offset"];
-var boundaryValues = ["noboundary", "noboundary", "noboundary"];
-var errors = ["", "", ""];
+var currentValues = ["waveform", "freq", "ampl", "offset"];
+var errors = ["", "", "", ""];
+var waveErrorMade = "noerror";
 visir.HPFunctionGenerator.prototype.LoadHandler = function (config) {
 	if (config !== "nothing") {
 		this._config = config;
-		if (config.hpfuncgen_prohbWaves.includes(this.GetWaveform())) {
-			alert("[Function generator]\n\nThis experiment does not admit the " + this.GetWaveform() + " waveform.");
-		} else {
-			errors = ["", "", ""];
-			for (var i = 0; i < currentValues.length; i++) {
+		errors = ["", "", "", ""];
+		for (var i = 0; i < currentValues.length; i++) {
+			if (config.hpfuncgen_prohbWaves.includes(this.GetWaveform()) && i == 0) {
+				errors[i] += "This experiment does not admit the " + this.GetWaveform() + " waveform.";
+				this.boundaries[i] = "Wrong waveform.";
+				waveErrorMade = true;
+			} else if (i !== 0) {
 				var multiplier = this._values[currentValues[i]].multiplier;
 				if (this._values[currentValues[i]].value / multiplier > config.hpfuncgen_max[currentValues[i]]) {
-					if (boundaryValues[i] == "noboundary") {
-						errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+					if (this.boundaries[i] == "noboundary") {
+						errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]]
 							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the \"" + currentValues[i] + "\" parameter.";
-						boundaryValues[i] = this._values[currentValues[i]].value / multiplier;
+						this.boundaries[i] = this._values[currentValues[i]].value / multiplier;
 					} else {
-						if (!(this._values[currentValues[i]].value / multiplier < boundaryValues[i])) {
-							errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+						if (!(this._values[currentValues[i]].value / multiplier < this.boundaries[i])) {
+							errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]]
 								+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the \"" + currentValues[i] + "\" parameter.";
 						}
-						boundaryValues[i] = this._values[currentValues[i]].value / multiplier;
+						this.boundaries[i] = this._values[currentValues[i]].value / multiplier;
 					}
 				} else if (this._values[currentValues[i]].value / multiplier < config.hpfuncgen_min[currentValues[i]]) {
-					if (boundaryValues[i] == "noboundary") {
-						errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+					if (this.boundaries[i] == "noboundary") {
+						errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]]
 							+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the \"" + currentValues[i] + "\" parameter.";
-						boundaryValues[i] = this._values[currentValues[i]].value / multiplier;
+						this.boundaries[i] = this._values[currentValues[i]].value / multiplier;
 					} else {
-						if (!(this._values[currentValues[i]].value / multiplier > boundaryValues[i])) {
-							errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]] 
+						if (!(this._values[currentValues[i]].value / multiplier > this.boundaries[i])) {
+							errors[i] += "This experiment only admits values between " + config.hpfuncgen_min[currentValues[i]]
 								+ " and " + config.hpfuncgen_max[currentValues[i]] + " for the \"" + currentValues[i] + "\" parameter.";
 						}
-						boundaryValues[i] = this._values[currentValues[i]].value / multiplier;
+						this.boundaries[i] = this._values[currentValues[i]].value / multiplier;
 					}
 				} else {
-					boundaryValues[i] = "noboundary";
+					this.boundaries[i] = "noboundary";
 				}
+			} else {
+				this.boundaries[i] = "noboundary";
+				if (waveErrorMade == true) waveErrorMade = false;
 			}
-			if (errors[currentValues.indexOf(this._currentValue)] !== "") {
+		}
+		if (errors[0] !== "") {
+			alert("[Function generator]\n\n" + errors[0] + "\n\n");
+		} else if (errors[currentValues.indexOf(this._currentValue)] !== "" || waveErrorMade == false) {
+			function elemsEmpty(elem) {
+				return elem == "";
+			}
+			if (!errors.every(elemsEmpty)) {
 				var errorMessage = "";
-				for (var i = 0; i < errors.length; i++) {
+				for (var i = 1; i < errors.length; i++) {
 					if (errors[i] !== "") {
 						errorMessage += (errors[i] + "\n\n");
 					}
 				}
 				alert("[Function generator]\n\n" + errorMessage);
+				waveErrorMade = "noerror";
 			}
 		}
 	}

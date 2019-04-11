@@ -11,6 +11,7 @@ visir.TripleDC = function(id, elem)
 	this._elem = elem;
 
 	this._config = "nothing";
+	this.boundaries = ["noboundary", "noboundary", "noboundary"]; // 6V+, 25V+, 25V-
 
 	// all the values are represented times 1000 to avoid floating point trouble
 	// XXX: need to change this later, both voltage and current has an active digit
@@ -201,42 +202,47 @@ visir.TripleDC.prototype.ReadResponse = function(response) {
 	this._UpdateDisplay(true);
 }
 
-var channels = ["6v+", "25V+", "25V-"];
-var boundary = "noboundary";
+var channels = ["6V+", "25V+", "25V-"];
+var errors = ["", "", ""];
 visir.TripleDC.prototype.LoadHandler = function (config) {
 	if (config !== "nothing") {
 		this._config = config;
-		var channel = this._activeChannel;
-		if (config.tripledc_prohbChannels.includes(channel)) {
-			alert("[DC Power]\n\nThis experiment does not support this channel (" + channel + ").");
-		} else {
-			if (this._values[channel].voltage / 1000 > config.tripledc_max[channel]) {
-				if (boundary == "noboundary") {
-					alert("[DC Power]\n\nThis experiment only admits values between " + config.tripledc_min[channel] + " and "
-						+ config.tripledc_max[channel] + " for the channel " + channel + ".");
-					boundary = this._values[channel].voltage / 1000;
-				} else {
-					if (!(this._values[channel].voltage / 1000 < boundary)) {
-						alert("[DC Power]\n\nThis experiment only admits values between " + config.tripledc_min[channel] + " and "
-							+ config.tripledc_max[channel] + " for the channel " + channel + ".");
-					}
-					boundary = this._values[channel].voltage / 1000;
-				}
-			} else if (this._values[channel].voltage / 1000 < config.tripledc_min[channel]) {
-				if (boundary == "noboundary") {
-					alert("[DC Power]\n\nThis experiment only admits values between " + config.tripledc_min[channel] + " and "
-						+ config.tripledc_max[channel] + " for the channel " + channel + ".");
-					boundary = this._values[channel].voltage / 1000;
-				} else {
-					if (!(this._values[channel].voltage / 1000 > boundary)) {
-						alert("[DC Power]\n\nThis experiment only admits values between " + config.tripledc_min[channel] + " and "
-							+ config.tripledc_max[channel] + " for the channel " + channel + ".");
-					}
-					boundary = this._values[channel].voltage / 1000;
-				}
+		errors = ["", "", ""];
+		for (var i = 0; i < channels.length; i++) {
+			if (config.tripledc_prohbChannels.includes(this._activeChannel) && this._activeChannel == channels[i]) {
+				errors[i] += "This experiment does not support this channel (" + this._activeChannel + ").";
 			} else {
-				boundary = "noboundary";
+				if (this._values[channels[i]].voltage / 1000 > config.tripledc_max[channels[i]]) {
+					if (this.boundaries[i] == "noboundary") {
+						errors[i] += "This experiment only admits values between " + config.tripledc_min[channels[i]] + " and "
+							+ config.tripledc_max[channels[i]] + " for the channel " + channels[i] + ".";
+						this.boundaries[i] = this._values[channels[i]].voltage / 1000;
+					} else {
+						if (!(this._values[channels[i]].voltage / 1000 < this.boundaries[i])) {
+							errors[i] += "This experiment only admits values between " + config.tripledc_min[channels[i]] + " and "
+								+ config.tripledc_max[channels[i]] + " for the channel " + channels[i] + ".";
+						}
+						this.boundaries[i] = this._values[channels[i]].voltage / 1000;
+					}
+				} else if (this._values[channels[i]].voltage / 1000 < config.tripledc_min[channels[i]]) {
+					if (this.boundaries[i] == "noboundary") {
+						errors[i] += "This experiment only admits values between " + config.tripledc_min[channels[i]] + " and "
+							+ config.tripledc_max[channels[i]] + " for the channel " + channels[i] + ".";
+						this.boundaries[i] = this._values[channels[i]].voltage / 1000;
+					} else {
+						if (!(this._values[channels[i]].voltage / 1000 > this.boundaries[i])) {
+							errors[i] += "This experiment only admits values between " + config.tripledc_min[channels[i]] + " and "
+								+ config.tripledc_max[channels[i]] + " for the channel " + channels[i] + ".";
+						}
+						this.boundaries[i] = this._values[channels[i]].voltage / 1000;
+					}
+				} else {
+					this.boundaries[i] = "noboundary";
+				}
 			}
+		}
+		if (errors[channels.indexOf(this._activeChannel)] !== "") {
+			alert("[DC Power]\n\n" + errors[channels.indexOf(this._activeChannel)] + "\n\n");
 		}
 	}
 }
