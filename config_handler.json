@@ -5,7 +5,7 @@ var CONFIG_HANDLER = {
         "25V+": 3,
         "25V-": -5},
     "tripledc_max": {
-        "6V+": 6,
+        "6V+": 3,
         "25V+": 7,
         "25V-": 0
     },

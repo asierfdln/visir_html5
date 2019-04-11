@@ -1305,6 +1305,8 @@ visir.Breadboard.prototype.ReadResponse = function() {}
 
 visir.Breadboard.prototype.ReadRequest = function() {}
 
+visir.Breadboard.prototype.LoadHandler = function (config) {}
+
 visir.Breadboard.prototype.ReadSave = function($xml)
 {
 	this.LoadCircuit($xml);

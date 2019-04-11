@@ -14,6 +14,7 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.0/css/bootstrap-slider.min.css">
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.0/bootstrap-slider.min.js"></script>
 	<script type="text/javascript" src="recorded.json"></script>
+	<script type="text/javascript" src="config_handler.json"></script>
 
 	<script>
 
@@ -72,6 +73,7 @@
 
     var reg;
 
+	var config_handler = CONFIG_HANDLER;
 	var recorded_data = RECORDED_DATA;
 
 	function init()
@@ -86,7 +88,7 @@
 		var transport = new visir.JSTransport(visir.SetWorking);
 		transport.onerror = function(err) { alert("Error: " + err); }
 
-		visir.Config.Set("readOnly", true);
+		// visir.Config.Set("readOnly", true);
 		transport.Connect(visir.Config.Get("mesServer"), "fnord");
 
 		reg = new visir.InstrumentRegistry();
@@ -94,6 +96,9 @@
 
 		emptyexperiment = '<save version="2"><instruments htmlinstruments="Breadboard|FlukeMultimeter|HPFunctionGenerator|AgilentOscilloscope|TripleDC"></instruments><circuit></circuit></save>';
 		reg.LoadExperiment(emptyexperiment, frame.GetInstrumentContainer());
+		setTimeout(function () { // This is to avoid the initial setup of the instruments, which involve multiple value changes...
+			reg.LoadHandler(config_handler);
+		}, 3000);
 
 		$(".measure").click( function() {
 			MakeMeasurement();

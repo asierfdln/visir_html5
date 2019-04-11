@@ -176,6 +176,10 @@ visir.NationalInstrumentOscilloscope.prototype._DrawPlot = function($elem)
 	DrawChannel(0, "#FFFFFF");
 };
 
+visir.NationalInstrumentOscilloscope.prototype.LoadHandler = function (config) {}
+
+visir.NationalInstrumentOscilloscope.prototype.ReadRequest = function () {}
+
 visir.NationalInstrumentOscilloscope.prototype.ReadResponse = function(response) {
 	visir.NationalInstrumentOscilloscope.parent.ReadResponse.apply(this, arguments);
 	this._DrawPlot(this._$elem.find(".plot"));

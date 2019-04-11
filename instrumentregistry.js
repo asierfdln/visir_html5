@@ -105,6 +105,12 @@ visir.InstrumentRegistry.prototype.ReadSave = function(response)
 	}
 }
 
+visir.InstrumentRegistry.prototype.LoadHandler = function (config) {
+	for(var i=0;i<this._instruments.length; i++) {
+		this._instruments[i].instrument.LoadHandler(config);
+	}
+}
+
 visir.InstrumentRegistry.prototype.WriteSave = function()
 {
 	$xml = $('<save version="2" />');

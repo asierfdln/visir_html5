@@ -986,6 +986,8 @@ visir.AgilentOscilloscope.prototype.ReadResponse = function(response) {
 	if (this._measurements.length > 2) UpdateResult($measurements.find(".box3"), this._measurements[2]);
 };
 
+visir.AgilentOscilloscope.prototype.LoadHandler = function (config) {}
+
 visir.AgilentOscilloscope.prototype._UpdateRunStopSingleButtons = function(state)
 {
 	switch(state) {

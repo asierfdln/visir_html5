@@ -123,6 +123,8 @@ visir.FlukeMultimeter.prototype.ReadResponse = function(response) {
 	this.UpdateDisplay();
 }
 
+visir.FlukeMultimeter.prototype.LoadHandler = function (config) {}
+
 visir.FlukeMultimeter.prototype._GetUnit = function(val)
 {
 	var units = [
