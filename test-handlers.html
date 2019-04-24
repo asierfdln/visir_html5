@@ -1,0 +1,225 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>VISIR HTML5 Test</title>
+	<meta name="viewport" content="initial-scale=1.0" />
+	<meta charset="UTF-8" />
+	<link rel="stylesheet" href="instruments/breadboard/breadboard.css" />
+	<link rel="stylesheet" href="instruments/flukemultimeter/flukemultimeter.css" />
+	<link rel="stylesheet" href="instruments/tripledc/tripledc.css" />
+	<link rel="stylesheet" href="instruments/hp_funcgen/hp_funcgen.css" />
+	<link rel="stylesheet" href="instruments/ag_oscilloscope/ag_oscilloscope.css" />
+	<style>
+		#dmm , #dmm2 {
+			display: inline-block;
+		}
+
+		#turn {
+			width: 188px; height: 188px;
+		}
+		#turn .top
+		{
+			transform-origin: 94px 94px;
+			-moz-transform-origin: 94px 94px;
+			-webkit-transform-origin: 94px 94px;
+			width: 188px; height: 188px;
+		}
+		#turn2
+		{
+			height: 94px;
+			width: 94px;
+		}
+
+		#turn2 .top
+		{
+			height: 94px;
+			width: 94px;
+		}
+
+		#bottom
+		{
+			position: fixed;
+			height: 230px;
+
+			bottom: 0;
+			right: 0;
+
+		}
+	</style>
+	<script type="text/javascript" src="jquery-2.1.3.min.js"></script>
+	<script type="text/javascript" src="visir.js"></script>
+	<script type="text/javascript" src="utils.js"></script>
+	<script type="text/javascript" src="jquery-turnable.js"></script>
+	<script type="text/javascript" src="jquery-draggable.js"></script>
+	<script type="text/javascript" src="jquery-updownbutton.js"></script>
+	<script type="text/javascript" src="instruments/transport.js"></script>
+
+	<script type="text/javascript" src="instruments/breadboard/breadboard.js"></script>
+
+	<script type="text/javascript" src="instruments/multimeter.js"></script>
+	<script type="text/javascript" src="instruments/flukemultimeter/flukemultimeter.js"></script>
+
+	<script type="text/javascript" src="instruments/dcpower.js"></script>
+	<script type="text/javascript" src="instruments/tripledc/tripledc.js"></script>
+
+	<script type="text/javascript" src="instruments/functiongenerator.js"></script>
+	<script type="text/javascript" src="instruments/hp_funcgen/hp_funcgen.js"></script>
+
+	<script type="text/javascript" src="instruments/oscilloscope.js"></script>
+	<script type="text/javascript" src="instruments/ag_oscilloscope/ag_oscilloscope.js"></script>
+
+	<script type="text/javascript" src="config_handler.json"></script>
+
+	<!-- bootstrap CSS & JS-->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	
+	<script>
+
+	function init()
+	{
+		function MakeMeasurement()
+		{
+			transport.Request(breadboard.WriteRequest()
+				+ flukedmm.WriteRequest()
+				+ flukedmm2.WriteRequest()
+				+ tripledc.WriteRequest()
+				+ osc.WriteRequest()
+				+ hp_func.WriteRequest()
+				,
+			function(res) {
+				flukedmm.ReadResponse(res);
+				flukedmm2.ReadResponse(res);
+				osc.ReadResponse(res);
+			});
+		}
+
+		//var circuit = '<circuit><circuitlist>W_X A23 DMM_VHI\nW_X F23 DMM_VLO\nR_X A23 F23 10k\nDMM_2 AA BB\nR_X AA BB 1k\n</circuitlist></circuit>';
+		var circuit = '<circuit><circuitlist>W_X A23 DMM_VHI\nW_X F23 DMM_VLO\nR_X A23 F23 10k\nVDC+6V AA\nDMM_2 AA 0\n</circuitlist></circuit>';
+		var instrxml = '<multimeter id="1"><dmm_function value="ac current"/><dmm_resolution value="3.5"/><dmm_range value="10"/></multimeter><multimeter id="2"><dmm_function value="dc volts"/><dmm_resolution value="3.5"/><dmm_range value="10"/></multimeter>';
+		var dcpower = '<dcpower><dc_outputs><dc_output channel="6V+"><dc_voltage value="5"/><dc_current value="0.5"/></dc_output><dc_output channel="25V+"><dc_voltage value="0"/><dc_current value="0.5"/></dc_output><dc_output channel="25V-"><dc_voltage value="0"/><dc_current value="0.5"/></dc_output></dc_outputs></dcpower>';
+
+		trace("starting up..");
+
+		var config_handler = CONFIG_HANDLER;
+
+		var transport = new visir.JSTransport(visir.SetWorking);
+		transport.onerror = function(err) { alert("Error: " + err); }
+
+		transport.Connect("http://194.47.149.107:8080/measureserver", "fnord");
+
+		var breadboard = new visir.Breadboard(1, $("#breadboard"));
+		var flukedmm = new visir.FlukeMultimeter(1, $("#dmm"));
+		var flukedmm2 = new visir.FlukeMultimeter(2, $("#dmm2"));
+
+		var osc = new visir.AgilentOscilloscope(1, $("#oscilloscope"), { MeasureCalling: MakeMeasurement, CheckToContinueCalling: function() { return true; } });
+
+		var tripledc = new visir.TripleDC(1, $("#tripledc"));
+
+		var hp_func = new visir.HPFunctionGenerator(1, $("#hp_funcgen"));
+
+		setTimeout(function () { // This is to avoid the initial setup of the instruments, which involve multiple value changes...
+			tripledc.LoadHandler(config_handler);
+			hp_func.LoadHandler(config_handler);
+			trace("configuration file loaded");
+			// $("#checkBoundaries").trigger('click');
+		}, 3000);
+
+		$(".measure").click( function() {
+			/*transport.Request(breadboard.WriteRequest()
+				+ flukedmm.WriteRequest()
+				+ flukedmm2.WriteRequest()
+				+ tripledc.WriteRequest(),
+			function(res) {
+				flukedmm.ReadResponse(res);
+				flukedmm2.ReadResponse(res);
+			});*/
+			MakeMeasurement();
+		});
+
+		$("#showlog").click( function() {
+			$("#logwindow").css("display", "block");
+		});
+		$("#hidelog").click( function() {
+			$("#logwindow").css("display", "none");
+		});
+
+		var checkBoundaryChanges = function () {
+			if (tripledc._config != "nothing") {
+				if (tripledc._config.tripledc_prohbChannels.includes(tripledc._activeChannel)) {
+					document.getElementById("rightChannel").className = "glyphicon glyphicon-remove";
+					document.getElementById("rightVoltage").className = "glyphicon glyphicon-remove";
+				} else {
+					document.getElementById("rightChannel").className = "glyphicon glyphicon-ok";
+					if (tripledc.boundaries[tripledc.channels.indexOf(tripledc._activeChannel)] == "noboundary") {
+						document.getElementById("rightVoltage").className = "glyphicon glyphicon-ok";
+					} else {
+						document.getElementById("rightVoltage").className = "glyphicon glyphicon-remove";
+					}
+				}
+			}
+
+			if (hp_func._config != "nothing") {
+				if (hp_func.boundaries[0] == "noboundary") {
+					document.getElementById("rightWaveform").className = "glyphicon glyphicon-ok";
+					if (hp_func.boundaries[1] == "noboundary") {
+						document.getElementById("rightFreq").className = "glyphicon glyphicon-ok";
+					} else {
+						document.getElementById("rightFreq").className = "glyphicon glyphicon-remove";
+					}
+					if (hp_func.boundaries[2] == "noboundary") {
+						document.getElementById("rightAmpl").className = "glyphicon glyphicon-ok";
+					} else {
+						document.getElementById("rightAmpl").className = "glyphicon glyphicon-remove";
+					}
+					if (hp_func.boundaries[3] == "noboundary") {
+						document.getElementById("rightOffset").className = "glyphicon glyphicon-ok";
+					} else {
+						document.getElementById("rightOffset").className = "glyphicon glyphicon-remove";
+					}
+				} else {
+					document.getElementById("rightWaveform").className = "glyphicon glyphicon-remove";
+					document.getElementById("rightFreq").className = "glyphicon glyphicon-remove";
+					document.getElementById("rightAmpl").className = "glyphicon glyphicon-remove";
+					document.getElementById("rightOffset").className = "glyphicon glyphicon-remove";
+				}
+			}
+		}
+
+		setInterval(function () { checkBoundaryChanges(); }, 1000);
+
+		// $("#checkBoundaries").click(function () {});
+	}
+	//$( function() { init(); });
+	$( function() {	visir.Load(init); });
+</script>
+</head>
+<body>
+	<div>
+		<div id="breadboard"></div>
+		<div id="dmm"></div>
+		<div id="dmm2"></div>
+		<div id="oscilloscope"></div>
+		<div id="hp_funcgen"></div>
+		<div id="tripledc"></div>
+		<div id="hp_funcgen"></div>
+	</div>
+	<div id="bottom">
+		<button href="#" id="checkBoundaries"><span href="#" id="configTester">Test config</span></button><br /><br />
+		<span><strong>TripleDC</strong></span><br />
+		<span>Channel: <span href="#" id="rightChannel" class="glyphicon glyphicon-ok"></span></span><br />
+		<span>Voltage: <span href="#" id="rightVoltage" class="glyphicon glyphicon-ok"></span></span><br /><br />
+		<span><strong>HPFuncGen</strong></span><br />
+		<span>Waveform: <span href="#" id="rightWaveform" class="glyphicon glyphicon-ok"></span></span><br />
+		<span>Freq: <span href="#" id="rightFreq" class="glyphicon glyphicon-ok"></span></span><br />
+		<span>Ampl: <span href="#" id="rightAmpl" class="glyphicon glyphicon-ok"></span></span><br />
+		<span>Offset: <span href="#" id="rightOffset" class="glyphicon glyphicon-ok"></span></span>
+	</div>
+	<div>
+		Log window:
+		<button id="showlog">Show</button>
+		<button id="hidelog">Hide</button>
+	</div>
+	<div id="logwindow" style="border: 1px solid #000000; padding: 2px; height: 500px; width: 800px; overflow: scroll; display:none"></div>
+</body>
+</html>
