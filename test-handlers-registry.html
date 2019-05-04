@@ -4,6 +4,15 @@
 	<title>VISIR HTML5 Test</title>
 	<link rel="stylesheet" href="instrumentframe/instrumentframe.css" />
 	<style>
+		#bottom
+		{
+			position: fixed;
+			height: 230px;
+
+			bottom: 0;
+			right: 0;
+
+		}
 	</style>
 	<meta charset="UTF-8">
 	<script type="text/javascript" src="jquery-2.1.3.min.js"></script>
@@ -15,6 +24,10 @@
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.0/bootstrap-slider.min.js"></script>
 	<script type="text/javascript" src="recorded.json"></script>
 	<script type="text/javascript" src="config_handler.json"></script>
+
+	<!-- bootstrap CSS & JS-->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 	<script>
 
@@ -96,6 +109,72 @@
 
 		emptyexperiment = '<save version="2"><instruments htmlinstruments="Breadboard|FlukeMultimeter|HPFunctionGenerator|AgilentOscilloscope|TripleDC"></instruments><circuit></circuit></save>';
 		reg.LoadExperiment(emptyexperiment, frame.GetInstrumentContainer());
+
+		var indexOfTripledc;
+		var indexOfHpfuncgen;
+		setTimeout(function () { // This is to avoid the initial setup of the instruments, which involve multiple value changes...
+			reg.LoadHandler(config_handler);
+			trace("configuration file loaded");
+			for (var i = 0; i < reg._instruments.length; i++) {
+				if (reg._instruments[i].instrument.hasOwnProperty("boundaries")) {
+					if (reg._instruments[i].name == "TripleDC") {
+						indexOfTripledc = i;
+						console.log("Im in the tripledc section with indexOfTripledc -> " + indexOfTripledc);
+						console.log(reg._instruments[i].name == "TripleDC");
+					} else if (reg._instruments[i].name == "HPFunctionGenerator") {
+						indexOfHpfuncgen = i;
+						console.log("Im in the hpfuncgen section with indexOfHpfuncgen -> " + indexOfHpfuncgen);
+						console.log(reg._instruments[i].name == "HPFunctionGenerator");
+					}
+				}
+			}
+			setInterval(function () { checkBoundaryChanges(); }, 1000);
+			// $("#checkBoundaries").trigger('click');
+		}, 3000);
+
+		var checkBoundaryChanges = function () {
+			if (reg._instruments[indexOfTripledc].instrument._config != "nothing") {
+				if (reg._instruments[indexOfTripledc].instrument._config.tripledc_prohbChannels.includes(reg._instruments[indexOfTripledc].instrument._activeChannel)) {
+					document.getElementById("rightChannel").className = "glyphicon glyphicon-remove";
+					document.getElementById("rightVoltage").className = "glyphicon glyphicon-remove";
+				} else {
+					document.getElementById("rightChannel").className = "glyphicon glyphicon-ok";
+					if (reg._instruments[indexOfTripledc].instrument.boundaries[reg._instruments[indexOfTripledc].instrument.channels.indexOf(reg._instruments[indexOfTripledc].instrument._activeChannel)] == "noboundary") {
+						document.getElementById("rightVoltage").className = "glyphicon glyphicon-ok";
+					} else {
+						document.getElementById("rightVoltage").className = "glyphicon glyphicon-remove";
+					}
+				}
+			}
+
+			if (reg._instruments[indexOfHpfuncgen].instrument._config != "nothing") {
+				if (reg._instruments[indexOfHpfuncgen].instrument.boundaries[0] == "noboundary") {
+					document.getElementById("rightWaveform").className = "glyphicon glyphicon-ok";
+					if (reg._instruments[indexOfHpfuncgen].instrument.boundaries[1] == "noboundary") {
+						document.getElementById("rightFreq").className = "glyphicon glyphicon-ok";
+					} else {
+						document.getElementById("rightFreq").className = "glyphicon glyphicon-remove";
+					}
+					if (reg._instruments[indexOfHpfuncgen].instrument.boundaries[2] == "noboundary") {
+						document.getElementById("rightAmpl").className = "glyphicon glyphicon-ok";
+					} else {
+						document.getElementById("rightAmpl").className = "glyphicon glyphicon-remove";
+					}
+					if (reg._instruments[indexOfHpfuncgen].instrument.boundaries[3] == "noboundary") {
+						document.getElementById("rightOffset").className = "glyphicon glyphicon-ok";
+					} else {
+						document.getElementById("rightOffset").className = "glyphicon glyphicon-remove";
+					}
+				} else {
+					document.getElementById("rightWaveform").className = "glyphicon glyphicon-remove";
+					document.getElementById("rightFreq").className = "glyphicon glyphicon-remove";
+					document.getElementById("rightAmpl").className = "glyphicon glyphicon-remove";
+					document.getElementById("rightOffset").className = "glyphicon glyphicon-remove";
+				}
+			}
+		}
+
+		// $("#checkBoundaries").click(function () {});
 
 		$(".measure").click( function() {
 			MakeMeasurement();
@@ -301,6 +380,17 @@
 	<br/>
 	<br/>
 
+	<div id="bottom">
+		<button href="#" id="checkBoundaries"><span href="#" id="configTester">Test config</span></button><br /><br />
+		<span><strong>TripleDC</strong></span><br />
+		<span>Channel: <span href="#" id="rightChannel" class="glyphicon glyphicon-ok"></span></span><br />
+		<span>Voltage: <span href="#" id="rightVoltage" class="glyphicon glyphicon-ok"></span></span><br /><br />
+		<span><strong>HPFuncGen</strong></span><br />
+		<span>Waveform: <span href="#" id="rightWaveform" class="glyphicon glyphicon-ok"></span></span><br />
+		<span>Freq: <span href="#" id="rightFreq" class="glyphicon glyphicon-ok"></span></span><br />
+		<span>Ampl: <span href="#" id="rightAmpl" class="glyphicon glyphicon-ok"></span></span><br />
+		<span>Offset: <span href="#" id="rightOffset" class="glyphicon glyphicon-ok"></span></span>
+	</div>
 	<div>
 		<ul>
 			<input id="ex211" type="text" style="width: 1160px" />
